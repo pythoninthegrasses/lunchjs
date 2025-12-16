@@ -62,6 +62,28 @@ lunchjs/
    rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
    ```
 
+4. **Install ios-deploy** (for physical device deployment):
+   ```bash
+   brew install ios-deploy
+   ```
+
+5. **Setup iOS Simulator** (for simulator development/testing):
+   - Simulators are automatically available in Xcode
+   - Default simulator: **iPhone 13 mini** (iOS 18.6)
+   - To add more simulators:
+     - Open Xcode → Window → Devices and Simulators
+     - Click **+** (Plus sign) at bottom left
+     - Select **Device Type** and **OS Version**
+     - Click **Create**
+   - To change the default simulator, edit `IOS_SIM_DEVICE` in `taskfiles/tauri.yml`
+
+6. **Configure Apple Developer account** (for iOS device builds only):
+   - **Not required** for simulator builds (`task ios:dev` or `task ios:build:sim`)
+   - **Required** for device builds and App Store distribution
+   - Open Xcode → Settings → Apple Accounts → Add your Apple ID
+   - Connect an iOS device or manually add device IDs at [developer.apple.com/account](https://developer.apple.com/account/)
+   - The Taskfile will automatically initialize the iOS project when needed
+
 ### Running the app
 
 #### Using Taskfile (recommended)
@@ -85,7 +107,7 @@ task build:arm64
 # Build (macOS - Intel)
 task build:x64
 
-# Build (iOS for App Store)
+# Build (iOS for App Store - requires device/provisioning)
 task ios:build
 
 # Upload to TestFlight
