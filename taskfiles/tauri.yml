@@ -116,12 +116,15 @@ tasks:
 
   ios:init:
     desc: "Initialize iOS project"
+    deps: [":npm:install"]
     cmds:
       - |
         echo "Adding iOS Rust targets..."
         rustup target add {{.IOS_ARM64_TARGET}} {{.IOS_SIM_X64_TARGET}} {{.IOS_SIM_ARM64_TARGET}}
         echo "Initializing iOS project..."
         cd {{.TAURI_DIR}} && npx tauri ios init
+    status:
+      - test -d {{.TAURI_DIR}}/gen/apple
 
   ios:boot:
     desc: "Boot iOS simulator"
@@ -131,27 +134,41 @@ tasks:
 
   ios:dev:
     desc: "Run on iOS simulator"
-    deps: [":npm:install", "ios:boot"]
+    deps: [":npm:install", "ios:init", "ios:boot"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri ios dev "{{.IOS_SIM_DEVICE}}"
     interactive: true
 
   ios:dev:device:
     desc: "Run on physical iOS device"
-    deps: [":npm:install"]
+    deps: [":npm:install", "ios:init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri ios dev --open --host
     interactive: true
 
   ios:build:
-    desc: "Build for iOS distribution"
-    deps: [":npm:install"]
+    desc: "Build for iOS distribution (requires device/provisioning)"
+    deps: [":npm:install", "ios:init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri ios build
 
+  ios:build:sim:
+    desc: "Build for iOS Simulator (no provisioning required)"
+    deps: [":npm:install", "ios:init"]
+    cmds:
+      - |
+        echo "Building for iOS Simulator..."
+        cd {{.TAURI_DIR}}
+        xcodebuild -scheme lunch_iOS \
+          -workspace gen/apple/lunch.xcodeproj/project.xcworkspace/ \
+          -sdk iphonesimulator \
+          -configuration debug \
+          -destination 'platform=iOS Simulator,name={{.IOS_SIM_DEVICE}},OS=18.6' \
+          build
+
   ios:build:appstore:
     desc: "Build for App Store Connect"
-    deps: [":npm:install"]
+    deps: [":npm:install", "ios:init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri ios build --export-method app-store-connect
 

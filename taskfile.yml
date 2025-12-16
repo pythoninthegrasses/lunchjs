@@ -75,9 +75,14 @@ tasks:
       - task: tauri:ios:dev:device
 
   ios:build:
-    desc: "Build for iOS distribution"
+    desc: "Build for iOS distribution (requires device/provisioning)"
     cmds:
       - task: tauri:ios:build
+
+  ios:build:sim:
+    desc: "Build for iOS Simulator (no provisioning required)"
+    cmds:
+      - task: tauri:ios:build:sim
 
   clean:
     desc: "Clean all build artifacts"
