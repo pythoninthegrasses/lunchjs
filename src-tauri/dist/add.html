@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lunch - Add Restaurant</title>
+    <link rel="stylesheet" href="basecoat.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="fonts/fontawesome.min.css" />
+    <script src="js/alpine.min.js" defer></script>
+    <script src="js/basecoat/basecoat.min.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
+  <body class="app-container">
+    <div class="main-content" id="main-content">
+      <div x-data="addView()" class="add-content">
+        <h1 class="text-2xl font-bold text-center">Add Restaurant</h1>
+
+        <form @submit.prevent="submit()" class="add-form">
+          <input x-model="name" class="form-input" required autofocus placeholder="" />
+
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" x-model="category" value="cheap" />
+              Cheap
+            </label>
+            <label class="radio-label">
+              <input type="radio" x-model="category" value="normal" checked />
+              Normal
+            </label>
+          </div>
+
+          <button type="submit" class="btn w-full" :disabled="loading">Add Restaurant</button>
+        </form>
+
+        <div id="add-result" class="text-center">
+          <span
+            x-show="success"
+            x-text="message"
+            class="text-success"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+          ></span>
+          <span x-show="error" x-text="message" class="text-destructive"></span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item" id="nav-home">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+      <a href="add.html" class="nav-item" id="nav-add">
+        <i class="fas fa-plus"></i>
+        <span>Add</span>
+      </a>
+      <a href="list.html" class="nav-item" id="nav-list">
+        <i class="fas fa-list"></i>
+        <span>List</span>
+      </a>
+      <a href="settings.html" class="nav-item" id="nav-settings">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <script>
+      function addView() {
+        return {
+          name: '',
+          category: 'normal',
+          message: '',
+          success: false,
+          error: false,
+          loading: false,
+
+          async submit() {
+            this.loading = true;
+            this.success = false;
+            this.error = false;
+
+            try {
+              await window.__TAURI__.core.invoke('add_restaurant', {
+                name: this.name,
+                category: this.category,
+              });
+              this.message = `Added restaurant: ${this.name} (${this.category.charAt(0).toUpperCase() + this.category.slice(1)})`;
+              this.success = true;
+              this.name = '';
+              setTimeout(() => {
+                this.success = false;
+              }, 5000);
+            } catch (e) {
+              this.message = e;
+              this.error = true;
+            }
+            this.loading = false;
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

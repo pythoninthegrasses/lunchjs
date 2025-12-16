@@ -1,0 +1,275 @@
+/* App layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  max-width: 28rem;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.main-content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* List view should start from top, not be centered */
+.main-content:has(#restaurant-list) {
+  justify-content: flex-start;
+}
+
+/* Home view - equal spacing between elements */
+.home-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Add view - equal spacing between elements */
+.add-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 24rem;
+  margin: 0 auto;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Bottom navigation - part of flex layout, not fixed */
+.bottom-nav {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 1rem 2rem;
+  border-top: 1px solid oklch(var(--border));
+  background: oklch(var(--background));
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  color: oklch(var(--muted-foreground));
+  text-decoration: none;
+  font-size: 0.75rem;
+  transition: color 0.2s;
+}
+
+.nav-item:hover {
+  color: oklch(var(--foreground));
+}
+
+.nav-item.active {
+  color: oklch(var(--foreground));
+}
+
+.nav-item i {
+  font-size: 1.25rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .bottom-nav {
+    margin-bottom: 3vh;
+    gap: 1.5rem;
+  }
+
+  .home-content {
+    padding-top: 10vh;
+  }
+
+}
+
+/* Theme toggle */
+.theme-toggle {
+  position: fixed;
+  top: 2rem;
+  right: 3rem;
+  z-index: 50;
+  color: oklch(var(--foreground));
+}
+
+@media (max-width: 768px) {
+  .theme-toggle {
+    right: 1rem;
+    top: 1rem;
+  }
+}
+
+/* Sun icon - hidden in light mode, shown in dark mode */
+.theme-toggle .sun-icon { display: none !important; }
+.dark .theme-toggle .sun-icon { display: inline !important; }
+
+/* Moon icon - shown in light mode, hidden in dark mode */
+.theme-toggle .moon-icon { display: inline !important; }
+.dark .theme-toggle .moon-icon { display: none !important; }
+
+/* Restaurant list */
+.restaurant-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid oklch(var(--border));
+}
+
+.restaurant-card:last-child {
+  border-bottom: none;
+}
+
+/* Price indicators - default to foreground, green on hover */
+.price-indicator {
+  color: oklch(var(--foreground));
+  transition: color 0.2s;
+}
+
+.price-indicator:hover {
+  color: #22c55e;
+}
+
+/* Delete button - foreground color, red on hover */
+button.delete-btn {
+  color: oklch(var(--foreground)) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.25rem 0.5rem;
+  min-width: auto;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+button.delete-btn:hover,
+button.delete-btn:focus,
+button.delete-btn:active {
+  color: #ef4444 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Form styles - underline input */
+.add-form input.form-input,
+input.form-input[name="name"] {
+  display: block;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0;
+  border-style: solid !important;
+  border-width: 0 0 1px 0 !important;
+  border-color: transparent transparent oklch(var(--foreground)) transparent !important;
+  border-radius: 0;
+  background: transparent;
+  color: oklch(var(--foreground));
+  text-align: center;
+}
+
+.add-form input.form-input:focus,
+input.form-input[name="name"]:focus {
+  outline: none;
+  border-bottom-color: oklch(var(--foreground)) !important;
+}
+
+.form-input::placeholder {
+  color: oklch(var(--muted-foreground));
+}
+
+/* Radio group */
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: oklch(var(--foreground));
+}
+
+/* Text utilities */
+.text-center { text-align: center; }
+.text-destructive { color: oklch(var(--destructive)); }
+.text-success { color: #22c55e; }
+.text-muted { color: oklch(var(--muted-foreground)); }
+.text-sm { font-size: 0.875rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.font-bold { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+
+/* Spacing utilities */
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.p-4 { padding: 1rem; }
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+
+/* Flexbox utilities */
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap-3 { gap: 0.75rem; }
+.gap-6 { gap: 1.5rem; }
+
+/* Width utilities */
+.w-full { width: 100%; }
+.max-w-sm { max-width: 24rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Display utilities */
+.block { display: block; }
+.hidden { display: none; }
+
+
+/* Banner */
+.banner-img {
+  max-width: 350px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Invert logo colors in dark mode */
+.dark .banner-img {
+  filter: invert(1);
+}
+
+/* Result areas - fixed height to prevent layout shift */
+#result,
+#add-result {
+  min-height: 2rem;
+}

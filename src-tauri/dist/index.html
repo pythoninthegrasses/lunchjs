@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lunch</title>
+    <link rel="stylesheet" href="basecoat.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="fonts/fontawesome.min.css" />
+    <script src="js/alpine.min.js" defer></script>
+    <script src="js/basecoat/basecoat.min.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
+  <body class="app-container">
+    <div class="main-content" id="main-content">
+      <div x-data="homeView()" class="text-center home-content">
+        <div class="logo-container">
+          <div class="theme-toggle" @click="toggleTheme()" style="cursor: pointer; font-size: 1.25rem">
+            <i class="fas fa-sun sun-icon"></i>
+            <i class="fas fa-moon moon-icon"></i>
+          </div>
+          <img src="logo.png" class="banner-img" />
+        </div>
+
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" x-model="category" value="cheap" />
+            Cheap
+          </label>
+          <label class="radio-label">
+            <input type="radio" x-model="category" value="normal" checked />
+            Normal
+          </label>
+        </div>
+
+        <button
+          class="btn"
+          @click="roll()"
+          :disabled="loading"
+          style="display: block; margin: 0 auto"
+        >
+          <span x-show="!loading">Roll Lunch</span>
+          <span x-show="loading">Rolling...</span>
+        </button>
+
+        <div id="result" class="text-center text-xl font-semibold">
+          <span x-show="error" class="text-destructive" x-text="result"></span>
+          <span x-show="!error" x-text="result"></span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item" id="nav-home">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+      <a href="add.html" class="nav-item" id="nav-add">
+        <i class="fas fa-plus"></i>
+        <span>Add</span>
+      </a>
+      <a href="list.html" class="nav-item" id="nav-list">
+        <i class="fas fa-list"></i>
+        <span>List</span>
+      </a>
+      <a href="settings.html" class="nav-item" id="nav-settings">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <script>
+      function homeView() {
+        return {
+          category: 'normal',
+          result: '',
+          loading: false,
+          error: false,
+
+          async roll() {
+            this.loading = true;
+            this.error = false;
+            try {
+              const restaurant = await window.__TAURI__.core.invoke('roll_lunch', {
+                category: this.category,
+              });
+              this.result = restaurant.name;
+            } catch (e) {
+              this.result = e;
+              this.error = true;
+            }
+            this.loading = false;
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

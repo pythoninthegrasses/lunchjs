@@ -1,0 +1,148 @@
+default_platform(:ios)
+
+ROOT_DIR = File.expand_path("..", __dir__)
+XCODEPROJ = "#{ROOT_DIR}/src-tauri/gen/apple/lunch.xcodeproj"
+APP_IDENTIFIER = "com.lunch.desktop"
+TEAM_ID = "654C9Y2C3F"
+OUTPUT_DIR = "#{ROOT_DIR}/src-tauri/gen/apple/build"
+IPA_PATH = "#{OUTPUT_DIR}/Lunch.ipa"
+
+# App Store Connect API Key configuration
+# Set these environment variables:
+# - APP_STORE_CONNECT_API_KEY_KEY_ID: API Key ID
+# - APP_STORE_CONNECT_API_KEY_ISSUER_ID: Issuer ID
+# - APP_STORE_CONNECT_API_KEY_KEY: Base64-encoded .p8 key content (or path to .p8 file)
+def api_key
+  if ENV['APP_STORE_CONNECT_API_KEY_KEY_ID'] && ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
+    app_store_connect_api_key(
+      key_id: ENV['APP_STORE_CONNECT_API_KEY_KEY_ID'],
+      issuer_id: ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID'],
+      key_content: ENV['APP_STORE_CONNECT_API_KEY_KEY'],
+      is_key_content_base64: true,
+      in_house: false
+    )
+  else
+    nil
+  end
+end
+
+platform :ios do
+  desc "Sync code signing certificates"
+  lane :certificates do
+    match(type: "appstore", readonly: true)
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    match(type: "appstore")
+
+    # Configure Xcode project signing before Tauri build
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: XCODEPROJ,
+      team_id: TEAM_ID,
+      bundle_identifier: APP_IDENTIFIER,
+      profile_name: "match AppStore #{APP_IDENTIFIER}",
+      code_sign_identity: "Apple Distribution"
+    )
+
+    # Write custom ExportOptions.plist for app-store export
+    export_options_path = "#{ROOT_DIR}/src-tauri/gen/apple/ExportOptions.plist"
+    File.write(export_options_path, <<~PLIST)
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>method</key>
+          <string>app-store</string>
+          <key>teamID</key>
+          <string>#{TEAM_ID}</string>
+          <key>signingStyle</key>
+          <string>manual</string>
+          <key>provisioningProfiles</key>
+          <dict>
+              <key>#{APP_IDENTIFIER}</key>
+              <string>match AppStore #{APP_IDENTIFIER}</string>
+          </dict>
+          <key>uploadSymbols</key>
+          <false/>
+      </dict>
+      </plist>
+    PLIST
+
+    # Build using Tauri (will use our custom ExportOptions.plist)
+    # Use app-store-connect flag so Tauri doesn't overwrite our plist
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios build --export-method app-store-connect")
+
+    # Find the built IPA (Tauri outputs to arm64 subdirectory)
+    tauri_ipa = "#{ROOT_DIR}/src-tauri/gen/apple/build/arm64/Lunch.ipa"
+
+    # Copy to expected location
+    FileUtils.mkdir_p(OUTPUT_DIR)
+    FileUtils.cp(tauri_ipa, IPA_PATH) if File.exist?(tauri_ipa)
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      ipa: IPA_PATH,
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      uses_non_exempt_encryption: false
+    )
+  end
+
+  desc "Upload to App Store"
+  lane :release do
+    match(type: "appstore")
+
+    # Configure Xcode project signing before Tauri build
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: XCODEPROJ,
+      team_id: TEAM_ID,
+      bundle_identifier: APP_IDENTIFIER,
+      profile_name: "match AppStore #{APP_IDENTIFIER}",
+      code_sign_identity: "Apple Distribution"
+    )
+
+    # Write custom ExportOptions.plist for app-store export
+    export_options_path = "#{ROOT_DIR}/src-tauri/gen/apple/ExportOptions.plist"
+    File.write(export_options_path, <<~PLIST)
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>method</key>
+          <string>app-store</string>
+          <key>teamID</key>
+          <string>#{TEAM_ID}</string>
+          <key>signingStyle</key>
+          <string>manual</string>
+          <key>provisioningProfiles</key>
+          <dict>
+              <key>#{APP_IDENTIFIER}</key>
+              <string>match AppStore #{APP_IDENTIFIER}</string>
+          </dict>
+          <key>uploadSymbols</key>
+          <false/>
+      </dict>
+      </plist>
+    PLIST
+
+    # Build using Tauri
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios build --export-method app-store-connect")
+
+    # Find the built IPA
+    tauri_ipa = "#{ROOT_DIR}/src-tauri/gen/apple/build/arm64/Lunch.ipa"
+
+    # Copy to expected location
+    FileUtils.mkdir_p(OUTPUT_DIR)
+    FileUtils.cp(tauri_ipa, IPA_PATH) if File.exist?(tauri_ipa)
+
+    upload_to_app_store(
+      ipa: IPA_PATH,
+      api_key: api_key,
+      skip_screenshots: true,
+      skip_metadata: true
+    )
+  end
+end

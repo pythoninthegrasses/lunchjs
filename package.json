@@ -1,0 +1,23 @@
+{
+  "name": "lunch-frontend",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i static/input.css -o static/styles.css --minify",
+    "watch:css": "tailwindcss -i static/input.css -o static/styles.css --watch",
+    "copy:js": "copyfiles -u 1 \"node_modules/basecoat-css/dist/js/**/*\" static/js/basecoat",
+    "build:sidecar": "uv run pyinstaller pyinstaller/lunch.spec --distpath src-tauri/bin --noconfirm",
+    "build:sidecar:arm64": "uv run pyinstaller pyinstaller/lunch.spec --distpath src-tauri/bin --noconfirm && mv src-tauri/bin/main src-tauri/bin/main-aarch64-apple-darwin",
+    "build:sidecar:x64": "arch -x86_64 uv run pyinstaller pyinstaller/lunch.spec --distpath src-tauri/bin --noconfirm && mv src-tauri/bin/main src-tauri/bin/main-x86_64-apple-darwin",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.6",
+    "copyfiles": "^2.4.1",
+    "tailwindcss": "^4"
+  },
+  "dependencies": {
+    "basecoat-css": "^0.3.6"
+  }
+}

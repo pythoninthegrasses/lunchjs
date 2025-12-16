@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3.0"
+
+set: ['e', 'u', 'pipefail']
+shopt: ['globstar']
+
+dotenv: ['.env']
+
+dir: "{{.ROOT_DIR}}"
+
+includes:
+  npm:
+    taskfile: ./taskfiles/npm.yml
+  tauri:
+    taskfile: ./taskfiles/tauri.yml
+
+tasks:
+  default:
+    desc: "Default task"
+    cmds:
+      - task --list
+
+  install-devbox:
+    desc: "Install devbox"
+    cmds:
+      - curl -fsSL https://get.jetify.com/devbox | bash
+    run: once
+    silent: true
+    environment:
+      FORCE: 1
+      INSTALL_DIR: "{{.HOME}}/.local/bin"
+    status:
+      - command -v devbox 2>/dev/null
+
+  install:
+    desc: "Install project dependencies"
+    deps: ["install-devbox"]
+    cmds:
+      - devbox install
+
+  pre-commit:
+    desc: "Run pre-commit hooks"
+    cmds:
+      - pre-commit run --all-files
+
+  dev:
+    desc: "Run Tauri in development mode"
+    cmds:
+      - task: tauri:dev
+
+  build:
+    desc: "Build Tauri app for current architecture"
+    cmds:
+      - task: tauri:build
+
+  build:arm64:
+    desc: "Build Tauri app for Apple Silicon (arm64)"
+    cmds:
+      - task: tauri:build:arm64
+
+  build:x64:
+    desc: "Build Tauri app for Intel (x86_64)"
+    cmds:
+      - task: tauri:build:x64
+
+  ios:
+    desc: "Run on iOS simulator"
+    cmds:
+      - task: tauri:ios:dev
+
+  ios:device:
+    desc: "Run on physical iOS device"
+    cmds:
+      - task: tauri:ios:dev:device
+
+  ios:build:
+    desc: "Build for iOS distribution"
+    cmds:
+      - task: tauri:ios:build
+
+  clean:
+    desc: "Clean all build artifacts"
+    cmds:
+      - task: tauri:clean
+      - task: npm:clean
+
+  ios:certificates:
+    desc: "Sync code signing certificates"
+    cmds:
+      - task: tauri:ios:certificates
+
+  ios:testflight:
+    desc: "Build and upload to TestFlight"
+    cmds:
+      - task: tauri:ios:testflight
+
+  ios:release:
+    desc: "Build and upload to App Store"
+    cmds:
+      - task: tauri:ios:release
