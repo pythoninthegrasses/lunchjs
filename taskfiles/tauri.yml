@@ -35,7 +35,8 @@ tasks:
           - build:arm64     Build for Apple Silicon (arm64)
           - build:x64       Build for Intel (x86_64)
           - build           Build for current architecture
-          - dev             Run development mode
+          - dev             Run development mode (nightly, ~10% faster)
+          - dev:stable      Run development mode (stable toolchain)
 
         iOS targets:
           - ios:init        Initialize iOS project
@@ -108,7 +109,18 @@ tasks:
       - "{{.TAURI_DIR}}/dist/**/*"
 
   dev:
-    desc: "Run Tauri in development mode"
+    desc: "Run Tauri in development mode (uses nightly + parallel frontend)"
+    deps: [":npm:install"]
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+      RUSTFLAGS: "-Z threads=8"
+    cmds:
+      - cmd: cd {{.TAURI_DIR}} && npx tauri dev
+        ignore_error: true
+    interactive: true
+
+  dev:stable:
+    desc: "Run Tauri in development mode (stable toolchain)"
     deps: [":npm:install"]
     cmds:
       - cmd: cd {{.TAURI_DIR}} && npx tauri dev
@@ -263,3 +275,8 @@ tasks:
     desc: "Build and upload to App Store"
     cmds:
       - fastlane release
+
+  test:
+    desc: "Run Rust tests"
+    cmds:
+      - cargo nextest run --manifest-path {{.TAURI_DIR}}/Cargo.toml
