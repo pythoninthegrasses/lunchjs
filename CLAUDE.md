@@ -10,22 +10,46 @@ LunchJS is a cross-platform restaurant selector app built with Tauri v2 + Alpine
 
 ```bash
 # Development (macOS) - uses nightly + parallel frontend (~10% faster)
-task tauri:dev
+task dev
 
 # Development (macOS) - stable toolchain fallback
 task tauri:dev:stable
 
 # Development (iOS simulator)
-task tauri:ios:dev
+task ios
 
-# Build (macOS)
-task tauri:build
-
-# Build (iOS)
-task tauri:ios:build
+# Development (physical iOS device)
+task ios:device
 
 # Run tests
-task tauri:test
+task test
+
+# Build (macOS - current architecture)
+task build
+
+# Build (macOS - Apple Silicon)
+task build:arm64
+
+# Build (macOS - Intel)
+task build:x64
+
+# Build (iOS for App Store - requires device/provisioning)
+task ios:build
+
+# Build (iOS Simulator - no provisioning required)
+task ios:build:sim
+
+# Sync code signing certificates
+task certs
+
+# Upload to TestFlight
+task ios:testflight
+
+# Upload to App Store
+task ios:release
+
+# Clean build artifacts
+task clean
 ```
 
 ## Architecture

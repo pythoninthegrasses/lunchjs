@@ -89,14 +89,20 @@ lunchjs/
 #### Using Taskfile (recommended)
 
 ```bash
-# Development (macOS)
+# Development (macOS) - uses nightly + parallel frontend (~10% faster)
 task dev
+
+# Development (macOS) - stable toolchain fallback
+task tauri:dev:stable
 
 # Development (iOS simulator)
 task ios
 
 # Development (physical iOS device)
 task ios:device
+
+# Run tests
+task test
 
 # Build (macOS - current architecture)
 task build
@@ -109,6 +115,12 @@ task build:x64
 
 # Build (iOS for App Store - requires device/provisioning)
 task ios:build
+
+# Build (iOS Simulator - no provisioning required)
+task ios:build:sim
+
+# Sync code signing certificates
+task certs
 
 # Upload to TestFlight
 task ios:testflight
