@@ -1,5 +1,5 @@
 use chrono::Utc;
-use rand::seq::SliceRandom;
+use rand::prelude::IndexedRandom;
 use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -110,9 +110,9 @@ impl Database {
             .collect();
 
         let chosen = if available.is_empty() {
-            restaurants.choose(&mut rand::thread_rng()).unwrap()
+            restaurants.choose(&mut rand::rng()).unwrap()
         } else {
-            available.choose(&mut rand::thread_rng()).unwrap()
+            available.choose(&mut rand::rng()).unwrap()
         };
 
         // Record selection
