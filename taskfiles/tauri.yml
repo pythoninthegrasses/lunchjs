@@ -17,7 +17,7 @@ vars:
   IOS_ARM64_TARGET: "aarch64-apple-ios"
   IOS_SIM_ARM64_TARGET: "aarch64-apple-ios-sim"
   IOS_SIM_X64_TARGET: "x86_64-apple-ios"
-  IOS_SIM_DEVICE: "iPhone 13 mini"
+  IOS_SIM_DEVICE: '{{.IOS_SIM_DEVICE | default "iPhone 13 mini"}}'
 
 tasks:
   info:

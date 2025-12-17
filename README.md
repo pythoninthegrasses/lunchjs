@@ -75,7 +75,7 @@ lunchjs/
      - Click **+** (Plus sign) at bottom left
      - Select **Device Type** and **OS Version**
      - Click **Create**
-   - To change the default simulator, edit `IOS_SIM_DEVICE` in `taskfiles/tauri.yml`
+   - To change the default simulator, edit `IOS_SIM_DEVICE` in `.env`
 
 6. **Configure Apple Developer account** (for iOS device builds only):
    - **Not required** for simulator builds (`task ios:dev` or `task ios:build:sim`)
