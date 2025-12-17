@@ -1,10 +1,10 @@
 ---
 id: task-007
 title: Fix iOS app icon (replace default Tauri icon)
-status: In Progress
+status: Done
 assignee: []
 created_date: '2025-12-12 18:50'
-updated_date: '2025-12-15 16:42'
+updated_date: '2025-12-17 16:43'
 labels:
   - ios
   - assets
@@ -24,5 +24,5 @@ The iOS app shows the default Tauri swirl icon instead of the custom "LUNCH" ico
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 iOS app displays custom LUNCH icon
-- [ ] #2 Icon appears correctly in TestFlight builds
+- [x] #2 Icon appears correctly in TestFlight builds
 <!-- AC:END -->
