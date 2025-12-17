@@ -92,6 +92,7 @@ tasks:
 
   ios:certificates:
     desc: "Sync code signing certificates"
+    aliases: [certs]
     cmds:
       - task: tauri:ios:certificates
 
