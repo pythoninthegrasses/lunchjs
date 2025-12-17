@@ -22,11 +22,20 @@ impl Database {
             std::fs::create_dir_all(parent).ok();
         }
         let conn = Connection::open(&path)?;
+        Self::with_connection(conn)
+    }
+
+    pub fn with_connection(conn: Connection) -> Result<Self> {
         let db = Database {
             conn: Mutex::new(conn),
         };
         db.init_tables()?;
         Ok(db)
+    }
+
+    pub fn in_memory() -> Result<Self> {
+        let conn = Connection::open_in_memory()?;
+        Self::with_connection(conn)
     }
 
     fn init_tables(&self) -> Result<()> {

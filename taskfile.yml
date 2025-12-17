@@ -104,3 +104,8 @@ tasks:
     desc: "Build and upload to App Store"
     cmds:
       - task: tauri:ios:release
+
+  test:
+    desc: "Run Rust tests"
+    cmds:
+      - task: tauri:test
