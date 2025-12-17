@@ -1,5 +1,18 @@
 default_platform(:ios)
 
+# Configure AWS SDK for MinIO (path-style addressing required)
+def configure_minio
+  if ENV['AWS_ENDPOINT_URL']
+    require 'aws-sdk-s3'
+    Aws.config.update(
+      endpoint: ENV['AWS_ENDPOINT_URL'],
+      force_path_style: true,
+      region: 'us-east-1'
+    )
+    UI.message("Configured AWS SDK for MinIO: #{ENV['AWS_ENDPOINT_URL']}")
+  end
+end
+
 ROOT_DIR = File.expand_path("..", __dir__)
 XCODEPROJ = "#{ROOT_DIR}/src-tauri/gen/apple/lunch.xcodeproj"
 APP_IDENTIFIER = "com.lunch.desktop"
@@ -29,11 +42,13 @@ end
 platform :ios do
   desc "Sync code signing certificates"
   lane :certificates do
+    configure_minio
     match(type: "appstore", readonly: true)
   end
 
   desc "Build and upload to TestFlight"
   lane :beta do
+    configure_minio
     match(type: "appstore")
 
     # Configure Xcode project signing before Tauri build
@@ -92,6 +107,7 @@ platform :ios do
 
   desc "Upload to App Store"
   lane :release do
+    configure_minio
     match(type: "appstore")
 
     # Configure Xcode project signing before Tauri build

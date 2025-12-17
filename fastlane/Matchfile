@@ -1,7 +1,6 @@
 storage_mode("s3")
 s3_bucket("ios-certificates")
 s3_region("us-east-1")
-s3_endpoint("http://minio.nwcrane.com:9000")
 
 type("appstore")
 app_identifier("com.lunch.desktop")
