@@ -111,7 +111,8 @@ tasks:
     desc: "Run Tauri in development mode"
     deps: [":npm:install"]
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri dev
+      - cmd: cd {{.TAURI_DIR}} && npx tauri dev
+        ignore_error: true
     interactive: true
 
   ios:init:
@@ -136,14 +137,16 @@ tasks:
     desc: "Run on iOS simulator"
     deps: [":npm:install", "ios:init", "ios:boot"]
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri ios dev "{{.IOS_SIM_DEVICE}}"
+      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev "{{.IOS_SIM_DEVICE}}"
+        ignore_error: true
     interactive: true
 
   ios:dev:device:
     desc: "Run on physical iOS device"
     deps: [":npm:install", "ios:init"]
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri ios dev --open --host
+      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev --open --host
+        ignore_error: true
     interactive: true
 
   ios:build:
