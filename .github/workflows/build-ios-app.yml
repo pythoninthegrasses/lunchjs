@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Setup Rust
@@ -56,11 +56,8 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Install fastlane dependencies
-        run: bundle install
-
       - name: Build and upload to TestFlight
-        run: fastlane beta
+        run: bundle exec fastlane beta
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
