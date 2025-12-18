@@ -43,6 +43,61 @@ end
 
 CI_KEYCHAIN_NAME = "fastlane_ci"
 CI_KEYCHAIN_PASSWORD = "fastlane_ci_password"
+IOS_INFO_PLIST = "#{ROOT_DIR}/src-tauri/gen/apple/lunch_iOS/Info.plist"
+
+# Get the app version from Cargo.toml
+def get_app_version
+  cargo_toml = File.read("#{ROOT_DIR}/src-tauri/Cargo.toml")
+  if cargo_toml =~ /^version\s*=\s*"([^"]+)"/
+    $1
+  else
+    "1.0.0"
+  end
+end
+
+# Update iOS build number to be unique for TestFlight
+def update_ios_build_number
+  key = api_key
+  return unless key
+
+  app_version = get_app_version
+  UI.message("App version from Cargo.toml: #{app_version}")
+
+  # Get latest build number from TestFlight for this version
+  begin
+    latest_build = latest_testflight_build_number(
+      api_key: key,
+      app_identifier: APP_IDENTIFIER,
+      version: app_version
+    )
+    UI.message("Latest TestFlight build number for v#{app_version}: #{latest_build}")
+  rescue => e
+    UI.message("No existing builds found for v#{app_version}, starting at 1")
+    latest_build = 0
+  end
+
+  new_build = latest_build + 1
+  UI.message("New build number: #{new_build}")
+
+  # Update Info.plist with new version and build number
+  if File.exist?(IOS_INFO_PLIST)
+    set_info_plist_value(
+      path: IOS_INFO_PLIST,
+      key: "CFBundleShortVersionString",
+      value: app_version
+    )
+    set_info_plist_value(
+      path: IOS_INFO_PLIST,
+      key: "CFBundleVersion",
+      value: new_build.to_s
+    )
+    UI.success("Updated iOS Info.plist: v#{app_version} (#{new_build})")
+  else
+    UI.important("iOS Info.plist not found at #{IOS_INFO_PLIST} - will be created by tauri ios init")
+  end
+
+  new_build
+end
 
 # Setup temporary keychain for CI environments
 def setup_ci_keychain
@@ -89,6 +144,15 @@ platform :ios do
       keychain_name: ENV['CI'] ? CI_KEYCHAIN_NAME : nil,
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
+
+    # Initialize iOS project if needed (creates Info.plist)
+    unless File.exist?(XCODEPROJ)
+      UI.message("Initializing iOS project...")
+      sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios init")
+    end
+
+    # Update build number to be unique for TestFlight
+    update_ios_build_number
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
@@ -154,6 +218,15 @@ platform :ios do
       keychain_name: ENV['CI'] ? CI_KEYCHAIN_NAME : nil,
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
+
+    # Initialize iOS project if needed (creates Info.plist)
+    unless File.exist?(XCODEPROJ)
+      UI.message("Initializing iOS project...")
+      sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios init")
+    end
+
+    # Update build number to be unique for App Store
+    update_ios_build_number
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(

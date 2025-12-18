@@ -19,6 +19,8 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      BUNDLE_FROZEN: "true"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -51,9 +53,6 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
-
-      - name: Initialize iOS project
-        run: cd src-tauri && npx tauri ios init
 
       - name: Build and upload to TestFlight
         run: bundle exec fastlane beta
