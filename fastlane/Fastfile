@@ -22,6 +22,25 @@ TEAM_ID = "654C9Y2C3F"
 OUTPUT_DIR = "#{ROOT_DIR}/src-tauri/gen/apple/build"
 IPA_PATH = "#{OUTPUT_DIR}/Lunch.ipa"
 
+# Fix Tauri iOS project issue where Externals folder in sources causes
+# "Multiple commands produce libapp.a" error (both debug and release copied)
+# See: https://github.com/tauri-apps/tauri/issues/13578
+def fix_tauri_project_yml
+  project_yml_path = "#{ROOT_DIR}/src-tauri/gen/apple/project.yml"
+  return unless File.exist?(project_yml_path)
+
+  content = File.read(project_yml_path)
+  # Remove "- path: Externals" from sources to prevent duplicate libapp.a
+  # libapp.a is already linked via dependencies, no need to copy as resource
+  if content.include?("- path: Externals")
+    content.gsub!(/^\s*- path: Externals\n/, "")
+    File.write(project_yml_path, content)
+    UI.message("Fixed project.yml: removed Externals from sources")
+    # Regenerate Xcode project with xcodegen
+    sh("cd #{ROOT_DIR}/src-tauri/gen/apple && xcodegen generate")
+  end
+end
+
 # App Store Connect API Key configuration
 # Set these environment variables:
 # - APP_STORE_CONNECT_API_KEY_KEY_ID: API Key ID
@@ -121,6 +140,60 @@ platform :ios do
     )
   end
 
+  desc "Build only (no upload) - for testing"
+  lane :build_only do
+    configure_minio
+    match(type: "appstore", readonly: true)
+
+    # Fix Tauri project.yml to prevent duplicate libapp.a error
+    fix_tauri_project_yml
+
+    # Configure Xcode project signing before Tauri build
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: XCODEPROJ,
+      team_id: TEAM_ID,
+      bundle_identifier: APP_IDENTIFIER,
+      profile_name: "match AppStore #{APP_IDENTIFIER}",
+      code_sign_identity: "Apple Distribution"
+    )
+
+    # TODO: move to separate xml file
+    # Write custom ExportOptions.plist for app-store export
+    export_options_path = "#{ROOT_DIR}/src-tauri/gen/apple/ExportOptions.plist"
+    File.write(export_options_path, <<~PLIST)
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>method</key>
+          <string>app-store</string>
+          <key>teamID</key>
+          <string>#{TEAM_ID}</string>
+          <key>signingStyle</key>
+          <string>manual</string>
+          <key>provisioningProfiles</key>
+          <dict>
+              <key>#{APP_IDENTIFIER}</key>
+              <string>match AppStore #{APP_IDENTIFIER}</string>
+          </dict>
+          <key>uploadSymbols</key>
+          <false/>
+      </dict>
+      </plist>
+    PLIST
+
+    # Build using Tauri
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios build --export-method app-store-connect")
+
+    # Find the built IPA
+    tauri_ipa = "#{ROOT_DIR}/src-tauri/gen/apple/build/arm64/Lunch.ipa"
+    FileUtils.mkdir_p(OUTPUT_DIR)
+    FileUtils.cp(tauri_ipa, IPA_PATH) if File.exist?(tauri_ipa)
+
+    UI.success("Build complete! IPA at: #{IPA_PATH}")
+  end
+
   desc "Build and upload to TestFlight"
   lane :beta do
     configure_minio
@@ -141,6 +214,9 @@ platform :ios do
       UI.message("Initializing iOS project...")
       sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios init")
     end
+
+    # Fix Tauri project.yml to prevent duplicate libapp.a error
+    fix_tauri_project_yml
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
@@ -215,6 +291,9 @@ platform :ios do
       UI.message("Initializing iOS project...")
       sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios init")
     end
+
+    # Fix Tauri project.yml to prevent duplicate libapp.a error
+    fix_tauri_project_yml
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
