@@ -51,24 +51,11 @@ jobs:
           cache-targets: true
           cache-on-failure: true
 
-      - name: Cache Homebrew packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            /opt/homebrew/Cellar/xcodegen
-            /opt/homebrew/Cellar/libimobiledevice
-            /opt/homebrew/Cellar/libplist
-            /opt/homebrew/Cellar/libimobiledevice-glue
-            /opt/homebrew/Cellar/libtatsu
-            /opt/homebrew/Cellar/libusbmuxd
-          key: ${{ runner.os }}-brew-ios-v1
-          restore-keys: |
-            ${{ runner.os }}-brew-ios-
-
       - name: Install Tauri iOS dependencies
         run: |
-          brew list xcodegen &>/dev/null || brew install xcodegen
-          brew list libimobiledevice &>/dev/null || brew install libimobiledevice
+          brew install xcodegen libimobiledevice
+          # Ensure binaries are linked and in PATH for Tauri
+          brew link --overwrite xcodegen libimobiledevice 2>/dev/null || true
 
       - name: Install npm dependencies
         run: npm ci
