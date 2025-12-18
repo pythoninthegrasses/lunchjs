@@ -218,6 +218,13 @@ platform :ios do
     # Fix Tauri project.yml to prevent duplicate libapp.a error
     fix_tauri_project_yml
 
+    # Set encryption exemption for App Store compliance
+    set_info_plist_value(
+      path: IOS_INFO_PLIST,
+      key: "ITSAppUsesNonExemptEncryption",
+      value: false
+    )
+
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
       use_automatic_signing: false,
@@ -284,6 +291,7 @@ platform :ios do
     )
 
     # Update tauri.conf.json with version and unique build number BEFORE init
+    # This ensures Tauri uses the correct version when generating the iOS project
     update_tauri_config_version
 
     # Initialize iOS project if needed (creates Info.plist with correct version)
@@ -294,6 +302,13 @@ platform :ios do
 
     # Fix Tauri project.yml to prevent duplicate libapp.a error
     fix_tauri_project_yml
+
+    # Set encryption exemption for App Store compliance
+    set_info_plist_value(
+      path: IOS_INFO_PLIST,
+      key: "ITSAppUsesNonExemptEncryption",
+      value: false
+    )
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
