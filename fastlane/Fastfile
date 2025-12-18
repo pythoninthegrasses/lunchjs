@@ -55,10 +55,10 @@ def get_app_version
   end
 end
 
-# Update iOS build number to be unique for TestFlight
-def update_ios_build_number
+# Get the next unique build number for TestFlight
+def get_next_build_number
   key = api_key
-  return unless key
+  return 1 unless key
 
   app_version = get_app_version
   UI.message("App version from Cargo.toml: #{app_version}")
@@ -78,25 +78,29 @@ def update_ios_build_number
 
   new_build = latest_build + 1
   UI.message("New build number: #{new_build}")
-
-  # Update Info.plist with new version and build number
-  if File.exist?(IOS_INFO_PLIST)
-    set_info_plist_value(
-      path: IOS_INFO_PLIST,
-      key: "CFBundleShortVersionString",
-      value: app_version
-    )
-    set_info_plist_value(
-      path: IOS_INFO_PLIST,
-      key: "CFBundleVersion",
-      value: new_build.to_s
-    )
-    UI.success("Updated iOS Info.plist: v#{app_version} (#{new_build})")
-  else
-    UI.important("iOS Info.plist not found at #{IOS_INFO_PLIST} - will be created by tauri ios init")
-  end
-
   new_build
+end
+
+# Update tauri.conf.json with version from Cargo.toml and unique build number
+def update_tauri_config_version
+  app_version = get_app_version
+  build_number = get_next_build_number
+
+  tauri_conf_path = "#{ROOT_DIR}/src-tauri/tauri.conf.json"
+  tauri_conf = JSON.parse(File.read(tauri_conf_path))
+
+  # Set app version (CFBundleShortVersionString)
+  tauri_conf["version"] = app_version
+
+  # Set iOS-specific bundle version (CFBundleVersion) for unique build numbers
+  tauri_conf["bundle"] ||= {}
+  tauri_conf["bundle"]["iOS"] ||= {}
+  tauri_conf["bundle"]["iOS"]["bundleVersion"] = build_number.to_s
+
+  File.write(tauri_conf_path, JSON.pretty_generate(tauri_conf))
+  UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
+
+  { version: app_version, build: build_number }
 end
 
 # Setup temporary keychain for CI environments
@@ -145,14 +149,15 @@ platform :ios do
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
 
-    # Initialize iOS project if needed (creates Info.plist)
+    # Update tauri.conf.json with version and unique build number BEFORE init
+    # This ensures Tauri uses the correct version when generating the iOS project
+    update_tauri_config_version
+
+    # Initialize iOS project if needed (creates Info.plist with correct version)
     unless File.exist?(XCODEPROJ)
       UI.message("Initializing iOS project...")
       sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios init")
     end
-
-    # Update build number to be unique for TestFlight
-    update_ios_build_number
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
@@ -219,14 +224,14 @@ platform :ios do
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
 
-    # Initialize iOS project if needed (creates Info.plist)
+    # Update tauri.conf.json with version and unique build number BEFORE init
+    update_tauri_config_version
+
+    # Initialize iOS project if needed (creates Info.plist with correct version)
     unless File.exist?(XCODEPROJ)
       UI.message("Initializing iOS project...")
       sh("cd #{ROOT_DIR}/src-tauri && npx tauri ios init")
     end
-
-    # Update build number to be unique for App Store
-    update_ios_build_number
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
