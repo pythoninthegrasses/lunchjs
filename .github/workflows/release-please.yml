@@ -11,14 +11,21 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
       - name: Release with release-please
+        id: release
         uses: googleapis/release-please-action@v4
         with:
-          # PAT with write access to the repository
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-          # optional. customize path to release-please-config.json
           config-file: release-please-config.json
-          # optional. customize path to .release-please-manifest.json
           manifest-file: .release-please-manifest.json
+
+  build-ios:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    uses: ./.github/workflows/build-ios-app.yml
+    secrets: inherit

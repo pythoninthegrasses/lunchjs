@@ -1,19 +1,9 @@
 name: Build iOS App
 
 on:
-  push:
-    branches: ['main', 'master']
-    paths:
-      - 'src-tauri/**/*.rs'
-      - 'src-tauri/**/*.toml'
-      - 'src-tauri/dist/**'
-      - 'src-tauri/tauri.conf.json'
-      - 'src-tauri/gen/apple/**/*.swift'
-      - 'src-tauri/gen/apple/**/*.plist'
-      - 'fastlane/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/build-ios-app.yml'
+  # Called by release-please when a new version is released
+  workflow_call:
+  # Manual trigger for testing
   workflow_dispatch:
 
 jobs:
