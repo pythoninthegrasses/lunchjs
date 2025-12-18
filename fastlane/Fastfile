@@ -55,30 +55,13 @@ def get_app_version
   end
 end
 
-# Get the next unique build number for TestFlight
+# Get a unique build number using timestamp
+# This avoids race conditions with TestFlight API returning stale data
 def get_next_build_number
-  key = api_key
-  return 1 unless key
-
-  app_version = get_app_version
-  UI.message("App version from Cargo.toml: #{app_version}")
-
-  # Get latest build number from TestFlight for this version
-  begin
-    latest_build = latest_testflight_build_number(
-      api_key: key,
-      app_identifier: APP_IDENTIFIER,
-      version: app_version
-    )
-    UI.message("Latest TestFlight build number for v#{app_version}: #{latest_build}")
-  rescue => e
-    UI.message("No existing builds found for v#{app_version}, starting at 1")
-    latest_build = 0
-  end
-
-  new_build = latest_build + 1
-  UI.message("New build number: #{new_build}")
-  new_build
+  # Format: YYMMDDHHMM (fits in 32-bit integer, always increasing)
+  build_number = Time.now.utc.strftime("%y%m%d%H%M").to_i
+  UI.message("Build number (timestamp): #{build_number}")
+  build_number
 end
 
 # Update tauri.conf.json with version from Cargo.toml and unique build number
