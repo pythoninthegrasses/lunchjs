@@ -51,7 +51,7 @@ platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
     configure_minio
-    match(type: "appstore")
+    match(type: "appstore", readonly: true)
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
@@ -110,7 +110,7 @@ platform :ios do
   desc "Upload to App Store"
   lane :release do
     configure_minio
-    match(type: "appstore")
+    match(type: "appstore", readonly: true)
 
     # Configure Xcode project signing before Tauri build
     update_code_signing_settings(
