@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Sync code signing certificates
 
+### ios build_only
+
+```sh
+[bundle exec] fastlane ios build_only
+```
+
+Build only (no upload) - for testing
+
 ### ios beta
 
 ```sh
