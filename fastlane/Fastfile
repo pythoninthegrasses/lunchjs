@@ -1,3 +1,5 @@
+opt_out_usage
+
 default_platform(:ios)
 
 # Configure AWS SDK for MinIO (path-style addressing required)
