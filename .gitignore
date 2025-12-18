@@ -31,7 +31,6 @@ Temporary Items
 
 # Rust
 /src-tauri/target/
-/src-tauri/Cargo.lock
 
 # iOS generated project (can be regenerated with `npx tauri ios init`)
 /src-tauri/gen/
