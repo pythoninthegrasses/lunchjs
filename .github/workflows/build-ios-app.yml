@@ -6,6 +6,11 @@ on:
   # Manual trigger for testing
   workflow_dispatch:
 
+# Cancel in-progress builds when a newer one is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: macos-latest
