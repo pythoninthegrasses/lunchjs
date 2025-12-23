@@ -41,11 +41,42 @@ jobs:
           cache-targets: true
           cache-on-failure: true
 
+      - name: Set Homebrew prefix based on architecture
+        id: brew-prefix
+        run: |
+          if [[ $(uname -m) == "arm64" ]]; then
+            echo "prefix=/opt/homebrew" >> $GITHUB_OUTPUT
+          else
+            echo "prefix=/usr/local" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Homebrew formula versions
+        id: brew-versions
+        run: |
+          echo "xcodegen=$(brew info --json=v2 xcodegen | jq -r '.formulae[0].versions.stable')" >> $GITHUB_OUTPUT
+          echo "libimobiledevice=$(brew info --json=v2 libimobiledevice | jq -r '.formulae[0].versions.stable')" >> $GITHUB_OUTPUT
+
+      - name: Cache Homebrew packages
+        id: cache-homebrew
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ steps.brew-prefix.outputs.prefix }}/Cellar/{xcodegen,libimobiledevice,libplist,libusbmuxd}
+            ${{ steps.brew-prefix.outputs.prefix }}/opt/{xcodegen,libimobiledevice,libplist,libusbmuxd}
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-${{ steps.brew-versions.outputs.xcodegen }}-${{ steps.brew-versions.outputs.libimobiledevice }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-brew-
+
       - name: Install Tauri iOS dependencies
+        if: steps.cache-homebrew.outputs.cache-hit != 'true'
         run: |
           brew install xcodegen libimobiledevice
           # Ensure binaries are linked and in PATH for Tauri
           brew link --overwrite xcodegen libimobiledevice 2>/dev/null || true
+
+      - name: Link cached Homebrew packages
+        if: steps.cache-homebrew.outputs.cache-hit == 'true'
+        run: brew link --overwrite xcodegen libimobiledevice 2>/dev/null || true
 
       - name: Install npm dependencies
         run: npm ci
