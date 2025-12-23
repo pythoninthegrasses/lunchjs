@@ -23,6 +23,7 @@ rusqlite = { version = "0.38", features = ["bundled"] }
 rand = { version = "0.9", features = ["thread_rng"], default-features = false }
 chrono = { version = "0.4", features = ["now"], default-features = false }
 dirs = "6"
+csv = "1"
 
 [profile.dev]
 debug = 0
