@@ -61,8 +61,14 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            ${{ steps.brew-prefix.outputs.prefix }}/Cellar/{xcodegen,libimobiledevice,libplist,libusbmuxd}
-            ${{ steps.brew-prefix.outputs.prefix }}/opt/{xcodegen,libimobiledevice,libplist,libusbmuxd}
+            ${{ steps.brew-prefix.outputs.prefix }}/Cellar/xcodegen
+            ${{ steps.brew-prefix.outputs.prefix }}/Cellar/libimobiledevice
+            ${{ steps.brew-prefix.outputs.prefix }}/Cellar/libplist
+            ${{ steps.brew-prefix.outputs.prefix }}/Cellar/libusbmuxd
+            ${{ steps.brew-prefix.outputs.prefix }}/opt/xcodegen
+            ${{ steps.brew-prefix.outputs.prefix }}/opt/libimobiledevice
+            ${{ steps.brew-prefix.outputs.prefix }}/opt/libplist
+            ${{ steps.brew-prefix.outputs.prefix }}/opt/libusbmuxd
           key: ${{ runner.os }}-${{ runner.arch }}-brew-${{ steps.brew-versions.outputs.xcodegen }}-${{ steps.brew-versions.outputs.libimobiledevice }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-brew-
