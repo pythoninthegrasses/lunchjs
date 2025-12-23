@@ -24,6 +24,16 @@ tasks:
     cmds:
       - task --list
 
+  bundle:install:
+    desc: "Install Ruby gems from Gemfile.lock"
+    cmds:
+      - bundle install --quiet
+    sources:
+      - Gemfile
+      - Gemfile.lock
+    generates:
+      - .bundle/config
+
   install-devbox:
     desc: "Install devbox"
     cmds:
