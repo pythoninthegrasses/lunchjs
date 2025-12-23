@@ -84,11 +84,19 @@ jobs:
         if: steps.cache-homebrew.outputs.cache-hit == 'true'
         run: brew link --overwrite xcodegen libimobiledevice 2>/dev/null || true
 
-      - name: Install npm dependencies
-        run: npm ci
+      - name: Cache Task checksums
+        uses: actions/cache@v5
+        with:
+          path: .task
+          key: ${{ runner.os }}-task-${{ hashFiles('Taskfile.yml', 'taskfiles/**/*.yml', 'src-tauri/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-task-
+
+      - name: Install Task
+        uses: go-task/setup-task@v1
 
       - name: Build and upload to TestFlight
-        run: bundle exec fastlane beta
+        run: task ios:testflight
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
