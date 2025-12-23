@@ -7,6 +7,9 @@ shopt: ['globstar']
 
 dotenv: ['.env']
 
+env:
+  FASTLANE_OPT_OUT_USAGE: 1
+
 dir: "{{.ROOT_DIR}}"
 
 includes:
