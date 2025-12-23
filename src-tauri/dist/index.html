@@ -12,13 +12,13 @@
     <script src="js/app.js" defer></script>
   </head>
   <body class="app-container">
+    <div class="theme-toggle" @click="toggleTheme()">
+      <i class="fas fa-sun sun-icon"></i>
+      <i class="fas fa-moon moon-icon"></i>
+    </div>
     <div class="main-content" id="main-content">
       <div x-data="homeView()" class="text-center home-content">
         <div class="logo-container">
-          <div class="theme-toggle" @click="toggleTheme()" style="cursor: pointer; font-size: 1.25rem">
-            <i class="fas fa-sun sun-icon"></i>
-            <i class="fas fa-moon moon-icon"></i>
-          </div>
           <img src="logo.png" class="banner-img" />
         </div>
 

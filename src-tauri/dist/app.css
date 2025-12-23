@@ -108,11 +108,13 @@ html, body {
 
 /* Theme toggle */
 .theme-toggle {
-  position: fixed;
-  top: 2rem;
-  right: 3rem;
+  position: fixed !important;
+  top: 1rem !important;
+  right: 2.5rem !important;
   z-index: 50;
   color: oklch(var(--foreground));
+  cursor: pointer;
+  font-size: 1.25rem;
 }
 
 @media (max-width: 768px) {
