@@ -264,7 +264,7 @@ tasks:
   ios:certificates:
     desc: "Sync code signing certificates"
     cmds:
-      - fastlane certificates
+      - bundle exec fastlane certificates
 
   ios:testflight:
     desc: "Build and upload to TestFlight"
@@ -281,12 +281,12 @@ tasks:
       - "{{.TAURI_DIR}}/gen/apple/build/**/*.ipa"
     method: checksum
     cmds:
-      - fastlane beta
+      - bundle exec fastlane beta
 
   ios:release:
     desc: "Build and upload to App Store"
     cmds:
-      - fastlane release
+      - bundle exec fastlane release
 
   test:
     desc: "Run Rust tests"
