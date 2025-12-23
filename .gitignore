@@ -32,8 +32,11 @@ Temporary Items
 # Rust
 /src-tauri/target/
 
-# iOS generated project (can be regenerated with `npx tauri ios init`)
-/src-tauri/gen/
+# Exclude platform-specific schemas (regenerated on build)
+/src-tauri/gen/schemas/
+
+# The gen/apple directory is intentionally tracked for iOS configs
+# Its internal .gitignore handles build artifacts
 
 # Build outputs
 *.app
