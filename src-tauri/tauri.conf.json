@@ -41,12 +41,14 @@
       "minimumSystemVersion": "10.15"
     },
     "iOS": {
-      "developmentTeam": "654C9Y2C3F"
+      "developmentTeam": "654C9Y2C3F",
+      "bundleVersion": "2512231800"
     }
   },
   "plugins": {
     "shell": {
       "open": true
     }
-  }
+  },
+  "version": "0.10.0"
 }

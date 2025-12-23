@@ -25,17 +25,35 @@ IPA_PATH = "#{OUTPUT_DIR}/Lunch.ipa"
 # Fix Tauri iOS project issue where Externals folder in sources causes
 # "Multiple commands produce libapp.a" error (both debug and release copied)
 # See: https://github.com/tauri-apps/tauri/issues/13578
+# Also ensures ASSETCATALOG_COMPILER_APPICON_NAME is set so icons appear in builds
 def fix_tauri_project_yml
   project_yml_path = "#{ROOT_DIR}/src-tauri/gen/apple/project.yml"
   return unless File.exist?(project_yml_path)
 
   content = File.read(project_yml_path)
+  modified = false
+
   # Remove "- path: Externals" from sources to prevent duplicate libapp.a
   # libapp.a is already linked via dependencies, no need to copy as resource
   if content.include?("- path: Externals")
     content.gsub!(/^\s*- path: Externals\n/, "")
-    File.write(project_yml_path, content)
     UI.message("Fixed project.yml: removed Externals from sources")
+    modified = true
+  end
+
+  # Add ASSETCATALOG_COMPILER_APPICON_NAME setting to ensure icons are included
+  # This setting gets lost when xcodegen regenerates the project
+  unless content.include?("ASSETCATALOG_COMPILER_APPICON_NAME")
+    # Find the base: section under settings: and add the icon setting
+    content.gsub!(/(settings:\s+base:\s+.*?VALID_ARCHS:.*?\n)/m) do |match|
+      "#{match}        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon\n"
+    end
+    UI.message("Fixed project.yml: added ASSETCATALOG_COMPILER_APPICON_NAME setting")
+    modified = true
+  end
+
+  if modified
+    File.write(project_yml_path, content)
     # Regenerate Xcode project with xcodegen
     sh("cd #{ROOT_DIR}/src-tauri/gen/apple && xcodegen generate")
   end

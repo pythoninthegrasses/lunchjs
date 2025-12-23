@@ -268,13 +268,14 @@ tasks:
 
   ios:testflight:
     desc: "Build and upload to TestFlight"
-    deps: [":npm:install", "ios:init"]
+    deps: [":npm:install", "ios:init", "icons", ":bundle:install"]
     sources:
       - "{{.TAURI_DIR}}/src/**/*.rs"
       - "{{.TAURI_DIR}}/Cargo.toml"
       - "{{.TAURI_DIR}}/Cargo.lock"
       - "{{.TAURI_DIR}}/tauri.conf.json"
       - "{{.TAURI_DIR}}/dist/**/*"
+      - "{{.TAURI_DIR}}/icons/icon.png"
       - "{{.ROOT_DIR}}/fastlane/Fastfile"
       - "{{.ROOT_DIR}}/fastlane/Appfile"
     generates:

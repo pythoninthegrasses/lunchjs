@@ -3,6 +3,17 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>debugging</string>
+    <string>app-store</string>
+    <key>teamID</key>
+    <string>654C9Y2C3F</string>
+    <key>signingStyle</key>
+    <string>manual</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.lunch.desktop</key>
+        <string>match AppStore com.lunch.desktop</string>
+    </dict>
+    <key>uploadSymbols</key>
+    <false/>
 </dict>
 </plist>
