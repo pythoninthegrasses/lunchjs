@@ -98,6 +98,7 @@ jobs:
       - name: Build and upload to TestFlight
         run: task ios:testflight
         env:
+          FASTLANE_OPT_OUT_USAGE: 1
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
