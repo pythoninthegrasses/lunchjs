@@ -96,7 +96,7 @@ html, body {
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .bottom-nav {
-    margin-bottom: 3vh;
+    margin-bottom: 0.5vh;
     gap: 1.5rem;
   }
 
