@@ -50,9 +50,10 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Initialize Tauri iOS project
-        run: npx tauri ios init
-        working-directory: src-tauri
+      # TODO: test ci w/o this step
+      # - name: Initialize Tauri iOS project
+      #   run: npx tauri ios init
+      #   working-directory: src-tauri
 
       - name: Build and upload to TestFlight
         run: bundle exec fastlane beta
