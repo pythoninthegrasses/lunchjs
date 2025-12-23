@@ -1,10 +1,10 @@
 ---
 id: task-013
 title: Implement iOS CI/CD on GitHub Actions
-status: In Progress
+status: Done
 assignee: []
 created_date: '2025-12-17 22:59'
-updated_date: '2025-12-18 00:08'
+updated_date: '2025-12-23 00:00'
 labels:
   - ci
   - ios
@@ -57,8 +57,8 @@ From `.env.example`, these are needed:
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 GitHub Actions workflow successfully syncs certificates from MinIO via match
-- [ ] #2 Workflow builds iOS app using Tauri
-- [ ] #3 Workflow uploads IPA to TestFlight
+- [x] #2 Workflow builds iOS app using Tauri
+- [x] #3 Workflow uploads IPA to TestFlight
 - [x] #4 All 7 required secrets documented and configured
 - [x] #5 Workflow triggers on push to main/master
 
@@ -89,4 +89,22 @@ The iOS project (`src-tauri/gen/apple/`) is gitignored and doesn't exist in CI.
 - ✅ Fixed AWS_ENDPOINT_URL (removed :9000 port)
 
 - ✅ Added `readonly: true` to match calls (skip Dev Portal verification)
+
+### Run 20447097435 - SUCCESS ✅
+
+**Fix applied:** Added `npx tauri ios init` step before `fastlane beta`
+
+The workflow now successfully:
+
+1. ✅ Initializes the Tauri iOS project (generates Xcode project structure)
+
+2. ✅ Syncs certificates from MinIO via match
+
+3. ✅ Builds the iOS app using Tauri
+
+4. ✅ Uploads the IPA to TestFlight
+
+Workflow run: https://github.com/pythoninthegrass/lunchjs/actions/runs/20447097435
+
+All acceptance criteria have been met. The CI/CD pipeline is now fully functional.
 <!-- SECTION:NOTES:END -->
