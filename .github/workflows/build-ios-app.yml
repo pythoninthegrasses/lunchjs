@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: self-hosted
     env:
       BUNDLE_FROZEN: "true"
     steps:
