@@ -1,0 +1,95 @@
+version: "3.0"
+
+set: ['e', 'u', 'pipefail']
+shopt: ['globstar']
+
+env:
+  ANDROID_HOME: '{{.ANDROID_HOME | default "/opt/homebrew/share/android-commandlinetools"}}'
+  ANDROID_NDK_HOME: '{{.ANDROID_NDK_HOME | default "/opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358"}}'
+
+vars:
+  TAURI_DIR: "{{.ROOT_DIR}}/src-tauri"
+  ANDROID_EMULATOR: '{{.ANDROID_EMULATOR | default "pixel_7"}}'
+  ANDROID_ARM64_TARGET: "aarch64-linux-android"
+  ANDROID_ARMV7_TARGET: "armv7-linux-androideabi"
+  ANDROID_X86_TARGET: "i686-linux-android"
+  ANDROID_X64_TARGET: "x86_64-linux-android"
+
+tasks:
+  init:
+    desc: "Initialize Android project"
+    deps: [":npm:install"]
+    cmds:
+      - |
+        echo "Adding Android Rust targets..."
+        rustup target add {{.ANDROID_ARM64_TARGET}} {{.ANDROID_ARMV7_TARGET}} {{.ANDROID_X86_TARGET}} {{.ANDROID_X64_TARGET}}
+        echo "Initializing Android project..."
+        cd {{.TAURI_DIR}} && npx tauri android init
+    status:
+      - test -d {{.TAURI_DIR}}/gen/android
+
+  dev:
+    desc: "Run on Android emulator"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev "{{.ANDROID_EMULATOR}}"
+        ignore_error: true
+    interactive: true
+
+  dev:device:
+    desc: "Run on physical Android device"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --open --host
+        ignore_error: true
+    interactive: true
+
+  build:
+    desc: "Build for Android distribution (APK and AAB)"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cd {{.TAURI_DIR}} && npx tauri android build
+
+  build:apk:
+    desc: "Build APK only (for testing/sideloading)"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cd {{.TAURI_DIR}} && npx tauri android build --apk
+
+  build:aab:
+    desc: "Build AAB only (for Google Play)"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cd {{.TAURI_DIR}} && npx tauri android build --aab
+
+  testflight:
+    desc: "Build and upload to Google Play beta track"
+    deps: [":npm:install", "init", ":tauri:icons", ":bundle:install"]
+    sources:
+      - "{{.TAURI_DIR}}/src/**/*.rs"
+      - "{{.TAURI_DIR}}/Cargo.toml"
+      - "{{.TAURI_DIR}}/Cargo.lock"
+      - "{{.TAURI_DIR}}/tauri.conf.json"
+      - "{{.TAURI_DIR}}/dist/**/*"
+      - "{{.TAURI_DIR}}/icons/icon.png"
+      - "{{.ROOT_DIR}}/fastlane/Fastfile"
+      - "{{.ROOT_DIR}}/fastlane/Appfile"
+    generates:
+      - "{{.TAURI_DIR}}/gen/android/app/build/outputs/bundle/release/*.aab"
+    method: checksum
+    cmds:
+      - bundle exec fastlane android beta
+
+  release:
+    desc: "Build and upload to Google Play production"
+    deps: [":bundle:install"]
+    cmds:
+      - bundle exec fastlane android release
+
+  clean:
+    desc: "Clean Android build artifacts"
+    cmds:
+      - rm -rf {{.TAURI_DIR}}/gen/android/build
+      - rm -rf {{.TAURI_DIR}}/gen/android/app/build
+      - rm -rf {{.TAURI_DIR}}/gen/android/.gradle
+    silent: true

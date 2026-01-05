@@ -6,8 +6,6 @@ shopt: ['globstar']
 env:
   CARGO_HOME: "{{.ROOT_DIR}}/.cache/cargo"
   CARGO_TARGET_DIR: "{{.ROOT_DIR}}/src-tauri/target"
-  ANDROID_HOME: '{{.ANDROID_HOME | default "/opt/homebrew/share/android-commandlinetools"}}'
-  ANDROID_NDK_HOME: '{{.ANDROID_NDK_HOME | default "/opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358"}}'
 
 vars:
   APP_NAME: '{{.APP_NAME | default "Lunch"}}'
@@ -16,15 +14,6 @@ vars:
   TAURI_DIR: "{{.ROOT_DIR}}/src-tauri"
   MACOS_ARM64_TARGET: "aarch64-apple-darwin"
   MACOS_X64_TARGET: "x86_64-apple-darwin"
-  IOS_ARM64_TARGET: "aarch64-apple-ios"
-  IOS_SIM_ARM64_TARGET: "aarch64-apple-ios-sim"
-  IOS_SIM_X64_TARGET: "x86_64-apple-ios"
-  IOS_SIM_DEVICE: '{{.IOS_SIM_DEVICE | default "iPhone 13 mini"}}'
-  ANDROID_EMULATOR: '{{.ANDROID_EMULATOR | default "pixel_7"}}'
-  ANDROID_ARM64_TARGET: "aarch64-linux-android"
-  ANDROID_ARMV7_TARGET: "armv7-linux-androideabi"
-  ANDROID_X86_TARGET: "i686-linux-android"
-  ANDROID_X64_TARGET: "x86_64-linux-android"
 
 tasks:
   info:
@@ -38,30 +27,40 @@ tasks:
           Bundle ID: {{.BUNDLE_ID}}
           Tauri Directory: {{.TAURI_DIR}}
 
-        macOS targets:
+        macOS targets (tauri:*):
           - build:arm64     Build for Apple Silicon (arm64)
           - build:x64       Build for Intel (x86_64)
           - build           Build for current architecture
           - dev             Run development mode (nightly, ~10% faster)
           - dev:stable      Run development mode (stable toolchain)
 
-        iOS targets:
-          - ios:init        Initialize iOS project
-          - ios:dev         Run on iOS simulator
-          - ios:dev:device  Run on physical iOS device
-          - ios:build       Build for iOS distribution
+        iOS targets (ios:*):
+          - init            Initialize iOS project
+          - dev             Run on iOS simulator
+          - dev:device      Run on physical iOS device
+          - build           Build for iOS distribution
+          - build:sim       Build for iOS Simulator
+          - build:appstore  Build for App Store Connect
+          - certificates    Sync code signing certificates
+          - testflight      Build and upload to TestFlight
+          - release         Build and upload to App Store
+          - clean           Clean iOS build artifacts
 
-        Android targets:
-          - android:init        Initialize Android project
-          - android:dev         Run on Android emulator
-          - android:dev:device  Run on physical Android device
-          - android:build       Build for Android distribution (APK + AAB)
-          - android:build:apk   Build APK only (for testing)
-          - android:build:aab   Build AAB only (for Google Play)
+        Android targets (android:*):
+          - init            Initialize Android project
+          - dev             Run on Android emulator
+          - dev:device      Run on physical Android device
+          - build           Build for Android distribution (APK + AAB)
+          - build:apk       Build APK only (for testing)
+          - build:aab       Build AAB only (for Google Play)
+          - testflight      Build and upload to Google Play beta
+          - release         Build and upload to Google Play production
+          - clean           Clean Android build artifacts
 
-        Utilities:
+        Utilities (tauri:*):
           - icons           Generate app icons from logo
           - clean           Clean all build artifacts
+          - clean:rust      Clean only Rust build artifacts
           - doctor          Check environment
 
         Output locations:
@@ -144,136 +143,6 @@ tasks:
         ignore_error: true
     interactive: true
 
-  ios:init:
-    desc: "Initialize iOS project"
-    deps: [":npm:install"]
-    cmds:
-      - |
-        echo "Adding iOS Rust targets..."
-        rustup target add {{.IOS_ARM64_TARGET}} {{.IOS_SIM_X64_TARGET}} {{.IOS_SIM_ARM64_TARGET}}
-        echo "Initializing iOS project..."
-        cd {{.TAURI_DIR}} && npx tauri ios init
-    status:
-      - test -d {{.TAURI_DIR}}/gen/apple
-
-  ios:boot:
-    desc: "Boot iOS simulator"
-    cmds:
-      - xcrun simctl boot "{{.IOS_SIM_DEVICE}}" 2>/dev/null || true
-    silent: true
-
-  ios:dev:
-    desc: "Run on iOS simulator"
-    deps: [":npm:install", "ios:init", "ios:boot"]
-    cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev "{{.IOS_SIM_DEVICE}}"
-        ignore_error: true
-    interactive: true
-
-  ios:dev:device:
-    desc: "Run on physical iOS device"
-    deps: [":npm:install", "ios:init"]
-    cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev --open --host
-        ignore_error: true
-    interactive: true
-
-  ios:build:
-    desc: "Build for iOS distribution (requires device/provisioning)"
-    deps: [":npm:install", "ios:init"]
-    cmds:
-      - cd {{.TAURI_DIR}} && npx tauri ios build
-
-  ios:build:sim:
-    desc: "Build for iOS Simulator (no provisioning required)"
-    deps: [":npm:install", "ios:init"]
-    cmds:
-      - |
-        echo "Building for iOS Simulator..."
-        cd {{.TAURI_DIR}}
-        xcodebuild -scheme lunch_iOS \
-          -workspace gen/apple/lunch.xcodeproj/project.xcworkspace/ \
-          -sdk iphonesimulator \
-          -configuration debug \
-          -destination 'platform=iOS Simulator,name={{.IOS_SIM_DEVICE}},OS=18.6' \
-          build
-
-  ios:build:appstore:
-    desc: "Build for App Store Connect"
-    deps: [":npm:install", "ios:init"]
-    cmds:
-      - cd {{.TAURI_DIR}} && npx tauri ios build --export-method app-store-connect
-
-  android:init:
-    desc: "Initialize Android project"
-    deps: [":npm:install"]
-    cmds:
-      - |
-        echo "Adding Android Rust targets..."
-        rustup target add {{.ANDROID_ARM64_TARGET}} {{.ANDROID_ARMV7_TARGET}} {{.ANDROID_X86_TARGET}} {{.ANDROID_X64_TARGET}}
-        echo "Initializing Android project..."
-        cd {{.TAURI_DIR}} && npx tauri android init
-    status:
-      - test -d {{.TAURI_DIR}}/gen/android
-
-  android:dev:
-    desc: "Run on Android emulator"
-    deps: [":npm:install", "android:init"]
-    cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev "{{.ANDROID_EMULATOR}}"
-        ignore_error: true
-    interactive: true
-
-  android:dev:device:
-    desc: "Run on physical Android device"
-    deps: [":npm:install", "android:init"]
-    cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --open --host
-        ignore_error: true
-    interactive: true
-
-  android:build:
-    desc: "Build for Android distribution (APK and AAB)"
-    deps: [":npm:install", "android:init"]
-    cmds:
-      - cd {{.TAURI_DIR}} && npx tauri android build
-
-  android:build:apk:
-    desc: "Build APK only (for testing/sideloading)"
-    deps: [":npm:install", "android:init"]
-    cmds:
-      - cd {{.TAURI_DIR}} && npx tauri android build --apk
-
-  android:build:aab:
-    desc: "Build AAB only (for Google Play)"
-    deps: [":npm:install", "android:init"]
-    cmds:
-      - cd {{.TAURI_DIR}} && npx tauri android build --aab
-
-  android:testflight:
-    desc: "Build and upload to Google Play beta track"
-    deps: [":npm:install", "android:init", "icons", ":bundle:install"]
-    sources:
-      - "{{.TAURI_DIR}}/src/**/*.rs"
-      - "{{.TAURI_DIR}}/Cargo.toml"
-      - "{{.TAURI_DIR}}/Cargo.lock"
-      - "{{.TAURI_DIR}}/tauri.conf.json"
-      - "{{.TAURI_DIR}}/dist/**/*"
-      - "{{.TAURI_DIR}}/icons/icon.png"
-      - "{{.ROOT_DIR}}/fastlane/Fastfile"
-      - "{{.ROOT_DIR}}/fastlane/Appfile"
-    generates:
-      - "{{.TAURI_DIR}}/gen/android/app/build/outputs/bundle/release/*.aab"
-    method: checksum
-    cmds:
-      - bundle exec fastlane android beta
-
-  android:release:
-    desc: "Build and upload to Google Play production"
-    deps: [":bundle:install"]
-    cmds:
-      - bundle exec fastlane android release
-
   icons:
     desc: "Generate app icons from source icon"
     cmds:
@@ -298,20 +167,6 @@ tasks:
     desc: "Clean only Rust build artifacts"
     cmds:
       - cargo clean --manifest-path {{.TAURI_DIR}}/Cargo.toml
-    silent: true
-
-  clean:ios:
-    desc: "Clean iOS build artifacts"
-    cmds:
-      - rm -rf {{.TAURI_DIR}}/gen/apple/build
-    silent: true
-
-  clean:android:
-    desc: "Clean Android build artifacts"
-    cmds:
-      - rm -rf {{.TAURI_DIR}}/gen/android/build
-      - rm -rf {{.TAURI_DIR}}/gen/android/app/build
-      - rm -rf {{.TAURI_DIR}}/gen/android/.gradle
     silent: true
 
   test-app:
@@ -355,36 +210,6 @@ tasks:
     desc: "Run Tauri doctor to check environment"
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri info
-
-  ios:certificates:
-    desc: "Sync code signing certificates"
-    deps: [":bundle:install"]
-    cmds:
-      - bundle exec fastlane certificates
-
-  ios:testflight:
-    desc: "Build and upload to TestFlight"
-    deps: [":npm:install", "ios:init", "icons", ":bundle:install"]
-    sources:
-      - "{{.TAURI_DIR}}/src/**/*.rs"
-      - "{{.TAURI_DIR}}/Cargo.toml"
-      - "{{.TAURI_DIR}}/Cargo.lock"
-      - "{{.TAURI_DIR}}/tauri.conf.json"
-      - "{{.TAURI_DIR}}/dist/**/*"
-      - "{{.TAURI_DIR}}/icons/icon.png"
-      - "{{.ROOT_DIR}}/fastlane/Fastfile"
-      - "{{.ROOT_DIR}}/fastlane/Appfile"
-    generates:
-      - "{{.TAURI_DIR}}/gen/apple/build/**/*.ipa"
-    method: checksum
-    cmds:
-      - bundle exec fastlane beta
-
-  ios:release:
-    desc: "Build and upload to App Store"
-    deps: [":bundle:install"]
-    cmds:
-      - bundle exec fastlane release
 
   test:
     desc: "Run Rust tests"

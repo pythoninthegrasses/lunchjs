@@ -1,0 +1,108 @@
+version: "3.0"
+
+set: ['e', 'u', 'pipefail']
+shopt: ['globstar']
+
+vars:
+  TAURI_DIR: "{{.ROOT_DIR}}/src-tauri"
+  IOS_ARM64_TARGET: "aarch64-apple-ios"
+  IOS_SIM_ARM64_TARGET: "aarch64-apple-ios-sim"
+  IOS_SIM_X64_TARGET: "x86_64-apple-ios"
+  IOS_SIM_DEVICE: '{{.IOS_SIM_DEVICE | default "iPhone 13 mini"}}'
+
+tasks:
+  init:
+    desc: "Initialize iOS project"
+    deps: [":npm:install"]
+    cmds:
+      - |
+        echo "Adding iOS Rust targets..."
+        rustup target add {{.IOS_ARM64_TARGET}} {{.IOS_SIM_X64_TARGET}} {{.IOS_SIM_ARM64_TARGET}}
+        echo "Initializing iOS project..."
+        cd {{.TAURI_DIR}} && npx tauri ios init
+    status:
+      - test -d {{.TAURI_DIR}}/gen/apple
+
+  boot:
+    desc: "Boot iOS simulator"
+    cmds:
+      - xcrun simctl boot "{{.IOS_SIM_DEVICE}}" 2>/dev/null || true
+    silent: true
+
+  dev:
+    desc: "Run on iOS simulator"
+    deps: [":npm:install", "init", "boot"]
+    cmds:
+      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev "{{.IOS_SIM_DEVICE}}"
+        ignore_error: true
+    interactive: true
+
+  dev:device:
+    desc: "Run on physical iOS device"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev --open --host
+        ignore_error: true
+    interactive: true
+
+  build:
+    desc: "Build for iOS distribution (requires device/provisioning)"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cd {{.TAURI_DIR}} && npx tauri ios build
+
+  build:sim:
+    desc: "Build for iOS Simulator (no provisioning required)"
+    deps: [":npm:install", "init"]
+    cmds:
+      - |
+        echo "Building for iOS Simulator..."
+        cd {{.TAURI_DIR}}
+        xcodebuild -scheme lunch_iOS \
+          -workspace gen/apple/lunch.xcodeproj/project.xcworkspace/ \
+          -sdk iphonesimulator \
+          -configuration debug \
+          -destination 'platform=iOS Simulator,name={{.IOS_SIM_DEVICE}},OS=18.6' \
+          build
+
+  build:appstore:
+    desc: "Build for App Store Connect"
+    deps: [":npm:install", "init"]
+    cmds:
+      - cd {{.TAURI_DIR}} && npx tauri ios build --export-method app-store-connect
+
+  certificates:
+    desc: "Sync code signing certificates"
+    deps: [":bundle:install"]
+    cmds:
+      - bundle exec fastlane certificates
+
+  testflight:
+    desc: "Build and upload to TestFlight"
+    deps: [":npm:install", "init", ":tauri:icons", ":bundle:install"]
+    sources:
+      - "{{.TAURI_DIR}}/src/**/*.rs"
+      - "{{.TAURI_DIR}}/Cargo.toml"
+      - "{{.TAURI_DIR}}/Cargo.lock"
+      - "{{.TAURI_DIR}}/tauri.conf.json"
+      - "{{.TAURI_DIR}}/dist/**/*"
+      - "{{.TAURI_DIR}}/icons/icon.png"
+      - "{{.ROOT_DIR}}/fastlane/Fastfile"
+      - "{{.ROOT_DIR}}/fastlane/Appfile"
+    generates:
+      - "{{.TAURI_DIR}}/gen/apple/build/**/*.ipa"
+    method: checksum
+    cmds:
+      - bundle exec fastlane beta
+
+  release:
+    desc: "Build and upload to App Store"
+    deps: [":bundle:install"]
+    cmds:
+      - bundle exec fastlane release
+
+  clean:
+    desc: "Clean iOS build artifacts"
+    cmds:
+      - rm -rf {{.TAURI_DIR}}/gen/apple/build
+    silent: true
