@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo:*)",
+      "Bash(cat:*)",
+      "Bash(env)",
+      "Bash(fastlane match:*)",
+      "Bash(mc:*)",
+      "Bash(npx tauri:*)",
+      "Bash(rustup:*)",
+      "Bash(security cms:*)",
+      "Bash(security find-identity:*)",
+      "Bash(sg:*)",
+      "Bash(source .env)",
+      "Bash(task:*)",
+      "Bash(xcodebuild:*)",
+      "mcp__backlog__task_create",
+      "mcp__backlog__task_edit",
+      "mcp__backlog__task_list",
+      "mcp__backlog__task_view",
+      "mcp__serena__activate_project",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__initial_instructions",
+      "mcp__serena__list_dir"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
