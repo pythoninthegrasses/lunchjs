@@ -10,6 +10,7 @@ env:
 vars:
   TAURI_DIR: "{{.ROOT_DIR}}/src-tauri"
   ANDROID_EMULATOR: '{{.ANDROID_EMULATOR | default "pixel_7"}}'
+  ANDROID_AVD_DIR: '{{.HOME}}/.android/avd'
   ANDROID_ARM64_TARGET: "aarch64-linux-android"
   ANDROID_ARMV7_TARGET: "armv7-linux-androideabi"
   ANDROID_X86_TARGET: "i686-linux-android"
@@ -27,14 +28,71 @@ tasks:
         cd {{.TAURI_DIR}} && npx tauri android init
     status:
       - test -d {{.TAURI_DIR}}/gen/android
+    silent: true
+
+  emulator:keyboard:
+    desc: "Enable hardware keyboard for emulator (use host keyboard instead of virtual)"
+    vars:
+      AVD_CONFIG: '{{.ANDROID_AVD_DIR}}/{{.ANDROID_EMULATOR}}.avd/config.ini'
+    preconditions:
+      - sh: test -f "{{.AVD_CONFIG}}"
+        msg: |
+          AVD config not found: {{.AVD_CONFIG}}
+          Create emulator '{{.ANDROID_EMULATOR}}' in Android Studio or run:
+            avdmanager create avd -n {{.ANDROID_EMULATOR}} -k "system-images;android-34;google_apis;arm64-v8a"
+    status:
+      - grep -q "^hw.keyboard=yes" "{{.AVD_CONFIG}}"
+      - grep -q "^hw.keyboard.lid=no" "{{.AVD_CONFIG}}"
+    cmds:
+      - sed -i '' '/^hw\.keyboard *=/d' "{{.AVD_CONFIG}}"
+      - sed -i '' '/^hw\.keyboard\.lid *=/d' "{{.AVD_CONFIG}}"
+      - echo "hw.keyboard=yes" >> "{{.AVD_CONFIG}}"
+      - echo "hw.keyboard.lid=no" >> "{{.AVD_CONFIG}}"
+      - echo "Hardware keyboard enabled for {{.ANDROID_EMULATOR}}"
+    silent: true
+
+  emulator:hide-soft-keyboard:
+    desc: "Hide soft keyboard when hardware keyboard is connected (run while emulator is running)"
+    preconditions:
+      - sh: adb devices | grep -q "emulator"
+        msg: "No running emulator found. Start one with: task android:dev"
+    status:
+      - test "$(adb shell settings get secure show_ime_with_hard_keyboard)" = "0"
+    cmds:
+      - adb shell settings put secure show_ime_with_hard_keyboard 0
+      - echo "Soft keyboard hidden (hardware keyboard mode)"
+    silent: true
+
+  emulator:setup:
+    desc: "Configure emulator for development (keyboard config always, soft keyboard if emulator running)"
+    cmds:
+      - task: emulator:keyboard
+      - |
+        if adb devices | grep -q "emulator"; then
+          task android:emulator:hide-soft-keyboard
+        else
+          echo "Emulator not running - soft keyboard will be configured on next 'task android:dev'"
+        fi
+    silent: true
 
   dev:
     desc: "Run on Android emulator"
-    deps: [":npm:install", "init"]
+    deps: [":npm:install", "init", "emulator:keyboard"]
     cmds:
+      - |
+        (
+          while ! adb devices | grep -q "emulator"; do sleep 1; done
+          adb wait-for-device
+          sleep 2
+          if [ "$(adb shell settings get secure show_ime_with_hard_keyboard)" != "0" ]; then
+            adb shell settings put secure show_ime_with_hard_keyboard 0
+            echo "Soft keyboard auto-hidden"
+          fi
+        ) &
       - cmd: cd {{.TAURI_DIR}} && npx tauri android dev "{{.ANDROID_EMULATOR}}"
         ignore_error: true
     interactive: true
+    silent: true
 
   dev:device:
     desc: "Run on physical Android device"
@@ -43,24 +101,28 @@ tasks:
       - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --open --host
         ignore_error: true
     interactive: true
+    silent: true
 
   build:
     desc: "Build for Android distribution (APK and AAB)"
     deps: [":npm:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build
+    silent: true
 
   build:apk:
     desc: "Build APK only (for testing/sideloading)"
     deps: [":npm:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build --apk
+    silent: true
 
   build:aab:
     desc: "Build AAB only (for Google Play)"
     deps: [":npm:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build --aab
+    silent: true
 
   testflight:
     desc: "Build and upload to Google Play beta track"
@@ -79,12 +141,14 @@ tasks:
     method: checksum
     cmds:
       - bundle exec fastlane android beta
+    silent: true
 
   release:
     desc: "Build and upload to Google Play production"
     deps: [":bundle:install"]
     cmds:
       - bundle exec fastlane android release
+    silent: true
 
   clean:
     desc: "Clean Android build artifacts"
