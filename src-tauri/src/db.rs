@@ -11,6 +11,7 @@ pub struct Restaurant {
     pub category: String,
 }
 
+#[derive(Debug)]
 pub struct Database {
     conn: Mutex<Connection>,
 }
@@ -18,6 +19,11 @@ pub struct Database {
 impl Database {
     pub fn new() -> Result<Self> {
         let path = get_db_path();
+        Self::new_with_path(path)
+    }
+
+    pub fn new_with_path(path: PathBuf) -> Result<Self> {
+        tracing::info!("Opening database at: {:?}", path);
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).ok();
         }

@@ -131,7 +131,7 @@ tasks:
       RUSTUP_TOOLCHAIN: nightly
       RUSTFLAGS: "-Z threads=8"
     cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri dev
+      - cmd: cd {{.TAURI_DIR}} && npx tauri dev -- --features devtools
         ignore_error: true
     interactive: true
 
@@ -139,7 +139,7 @@ tasks:
     desc: "Run Tauri in development mode (stable toolchain)"
     deps: [":npm:install"]
     cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri dev
+      - cmd: cd {{.TAURI_DIR}} && npx tauri dev -- --features devtools
         ignore_error: true
     interactive: true
 

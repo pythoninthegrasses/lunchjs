@@ -2,11 +2,12 @@ pub mod db;
 
 use db::{Database, Restaurant};
 use std::sync::OnceLock;
+use tauri::Manager;
 
 static DB: OnceLock<Database> = OnceLock::new();
 
 fn get_db() -> &'static Database {
-    DB.get_or_init(|| Database::new().expect("Failed to initialize database"))
+    DB.get().expect("Database not initialized")
 }
 
 #[tauri::command]
@@ -43,8 +44,28 @@ fn roll_lunch(category: String) -> Result<Restaurant, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    #[allow(unused_mut)]
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(feature = "devtools")]
+    {
+        builder = builder.plugin(tauri_plugin_devtools::init());
+    }
+
+    builder
         .plugin(tauri_plugin_shell::init())
+        .setup(|app| {
+            let app_data_dir = app.path().app_data_dir()?;
+            let db_path = app_data_dir.join("lunch.db");
+
+            tracing::info!("Initializing database at: {:?}", db_path);
+
+            let database = Database::new_with_path(db_path)
+                .expect("Failed to initialize database");
+            DB.set(database).expect("Database already initialized");
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             list_restaurants,
             add_restaurant,
