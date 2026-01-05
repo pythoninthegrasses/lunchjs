@@ -119,6 +119,41 @@ tasks:
     cmds:
       - task: tauri:ios:release
 
+  android:
+    desc: "Run on Android emulator"
+    cmds:
+      - task: tauri:android:dev
+
+  android:device:
+    desc: "Run on physical Android device"
+    cmds:
+      - task: tauri:android:dev:device
+
+  android:build:
+    desc: "Build for Android distribution (APK + AAB)"
+    cmds:
+      - task: tauri:android:build
+
+  android:build:apk:
+    desc: "Build APK only (for testing)"
+    cmds:
+      - task: tauri:android:build:apk
+
+  android:build:aab:
+    desc: "Build AAB only (for Google Play)"
+    cmds:
+      - task: tauri:android:build:aab
+
+  android:testflight:
+    desc: "Build and upload to Google Play beta track"
+    cmds:
+      - task: tauri:android:testflight
+
+  android:release:
+    desc: "Build and upload to Google Play production"
+    cmds:
+      - task: tauri:android:release
+
   test:
     desc: "Run Rust tests"
     cmds:

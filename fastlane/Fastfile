@@ -380,3 +380,113 @@ platform :ios do
     )
   end
 end
+
+platform :android do
+  desc "Build Android release (AAB and APK)"
+  lane :build do
+    # Set ANDROID_HOME for this session
+    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+
+    # Update tauri.conf.json with version from Cargo.toml
+    app_version = get_app_version
+    build_number = get_next_build_number
+
+    tauri_conf_path = "#{ROOT_DIR}/src-tauri/tauri.conf.json"
+    tauri_conf = JSON.parse(File.read(tauri_conf_path))
+    tauri_conf["version"] = app_version
+    tauri_conf["bundle"] ||= {}
+    tauri_conf["bundle"]["android"] ||= {}
+    tauri_conf["bundle"]["android"]["versionCode"] = build_number
+    File.write(tauri_conf_path, JSON.pretty_generate(tauri_conf))
+
+    UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
+
+    # Build Android app using Tauri
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build")
+
+    UI.success("Android build complete!")
+  end
+
+  desc "Build and upload to Google Play Store beta track"
+  lane :beta do
+    # Set ANDROID_HOME for this session
+    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+
+    # Update tauri.conf.json with version from Cargo.toml
+    app_version = get_app_version
+    build_number = get_next_build_number
+
+    tauri_conf_path = "#{ROOT_DIR}/src-tauri/tauri.conf.json"
+    tauri_conf = JSON.parse(File.read(tauri_conf_path))
+    tauri_conf["version"] = app_version
+    tauri_conf["bundle"] ||= {}
+    tauri_conf["bundle"]["android"] ||= {}
+    tauri_conf["bundle"]["android"]["versionCode"] = build_number
+    File.write(tauri_conf_path, JSON.pretty_generate(tauri_conf))
+
+    UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
+
+    # Build Android app bundle using Gradle
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "#{ROOT_DIR}/src-tauri/gen/android"
+    )
+
+    # Upload to Play Store beta track
+    # Requires Google Play Console API credentials set up
+    # Set SUPPLY_JSON_KEY_DATA or SUPPLY_JSON_KEY environment variable
+    upload_to_play_store(
+      track: "beta",
+      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    UI.success("Uploaded to Google Play Store beta track!")
+  end
+
+  desc "Upload to Google Play Store production"
+  lane :release do
+    # Set ANDROID_HOME for this session
+    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+
+    # Update tauri.conf.json with version from Cargo.toml
+    app_version = get_app_version
+    build_number = get_next_build_number
+
+    tauri_conf_path = "#{ROOT_DIR}/src-tauri/tauri.conf.json"
+    tauri_conf = JSON.parse(File.read(tauri_conf_path))
+    tauri_conf["version"] = app_version
+    tauri_conf["bundle"] ||= {}
+    tauri_conf["bundle"]["android"] ||= {}
+    tauri_conf["bundle"]["android"]["versionCode"] = build_number
+    File.write(tauri_conf_path, JSON.pretty_generate(tauri_conf))
+
+    UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
+
+    # Build Android app bundle using Gradle
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "#{ROOT_DIR}/src-tauri/gen/android"
+    )
+
+    # Upload to Play Store production track
+    # Requires Google Play Console API credentials set up
+    # Set SUPPLY_JSON_KEY_DATA or SUPPLY_JSON_KEY environment variable
+    upload_to_play_store(
+      track: "production",
+      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    UI.success("Uploaded to Google Play Store production track!")
+  end
+end

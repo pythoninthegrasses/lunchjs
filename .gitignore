@@ -37,8 +37,8 @@ Temporary Items
 # Exclude platform-specific schemas (regenerated on build)
 /src-tauri/gen/schemas/
 
-# The gen/apple directory is intentionally tracked for iOS configs
-# Its internal .gitignore handles build artifacts
+# The gen/apple and gen/android directories are intentionally tracked for platform configs
+# Their internal .gitignore files handle build artifacts
 
 # Build outputs
 *.app

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-LunchJS is a cross-platform restaurant selector app built with Tauri v2 + Alpine.js, targeting macOS desktop and iOS mobile. The app randomly selects restaurants from a user-maintained list, with category filtering (cheap/normal).
+LunchJS is a cross-platform restaurant selector app built with Tauri v2 + Alpine.js, targeting macOS desktop, iOS mobile, and Android mobile. The app randomly selects restaurants from a user-maintained list, with category filtering (cheap/normal).
 
 ## Development Commands
 
@@ -47,6 +47,21 @@ task ios:testflight
 
 # Upload to App Store
 task ios:release
+
+# Development (Android emulator - requires Android SDK/NDK setup)
+npx tauri android dev
+
+# Build (Android release APK and AAB)
+npx tauri android build
+
+# Build via Fastlane (Android)
+fastlane android build
+
+# Upload to Google Play Store beta track
+fastlane android beta
+
+# Upload to Google Play Store production
+fastlane android release
 
 # Clean build artifacts
 task clean
@@ -93,18 +108,43 @@ Tables:
 - iOS project initialized with Team ID
 - Xcode project at `src-tauri/gen/apple/lunch.xcodeproj`
 
+**Android Setup Complete**:
+- Rust targets installed (`aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android`)
+- Android project initialized at `src-tauri/gen/android/`
+- Fastlane configured with build, beta, and release lanes
+- Package name: `com.lunch.desktop`
+- Required environment variables (add to `~/.bash_profile`):
+  ```bash
+  # Java
+  export PATH="/opt/homebrew/opt/openjdk@24/bin:$PATH"
+  export JAVA_HOME="/opt/homebrew/opt/openjdk@24"
+
+  # Android SDK
+  export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"
+  export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+
+  # Android NDK
+  export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"
+  ```
+
 **Next Steps**:
-- Download iOS simulator runtime from Xcode → Settings → Platforms
-- Test on simulator: `npx tauri ios dev`
-- Or test on physical device: `npx tauri ios dev --open --host`
+- iOS: Download simulator runtime from Xcode → Settings → Platforms
+- iOS: Test on simulator: `npx tauri ios dev`
+- iOS: Test on device: `npx tauri ios dev --open --host`
+- Android: Test on emulator: `npx tauri android dev` (requires emulator running)
+- Android: Test manual feature validation on emulator
 
 ## Context
+
+Always use Context7 MCP when I need library/API documentation, code generation, 
+setup or configuration steps without me having to explicitly ask.
 
 - Context7 mcp libraries
   - fastlane/docs
   - rohanadwankar/oxdraw
   - taskfile_dev
   - websites/basecoatui_com
+  - websites/developer_android
   - websites/v2_tauri_app
 
 <!-- BACKLOG.MD GUIDELINES START -->

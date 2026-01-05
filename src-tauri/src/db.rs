@@ -207,7 +207,15 @@ fn get_db_path() -> PathBuf {
             .unwrap_or_else(|| PathBuf::from("."))
             .join("lunch.db")
     }
-    #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+    #[cfg(target_os = "android")]
+    {
+        // On Android, use the app's internal storage directory
+        // Falls back to current dir if dirs::data_local_dir fails
+        dirs::data_local_dir()
+            .unwrap_or_else(|| PathBuf::from("/data/local/tmp"))
+            .join("lunch.db")
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "ios", target_os = "android")))]
     {
         dirs::data_dir()
             .unwrap_or_else(|| PathBuf::from("."))
