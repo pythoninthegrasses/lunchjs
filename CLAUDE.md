@@ -106,6 +106,12 @@ gh pr create --title "title" --body "$(cat <<'EOF'
 - Change 2
 EOF
 )"
+
+# list github actions (gha) runs
+gh run list
+
+# watch gha runs
+gh run watch 20756222745
 ```
 
 ## Architecture
