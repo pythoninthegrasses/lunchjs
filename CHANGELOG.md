@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.11.0](https://github.com/pythoninthegrass/lunchjs/compare/v0.10.0...v0.11.0) (2026-01-06)
+
+
+### Features
+
+* android builds ([dbc7ab2](https://github.com/pythoninthegrass/lunchjs/commit/dbc7ab23a28e14d6022b6cef5cc8e90a27bc3bf8))
+* seed db ([aa327da](https://github.com/pythoninthegrass/lunchjs/commit/aa327dad8036cd57a7917156e3d2d14d920c84bc))
+
+
+### Bug Fixes
+
+* **ios:** improve viewport handling and disable zoom ([88dc107](https://github.com/pythoninthegrass/lunchjs/commit/88dc107aefd663f664f8480fb092ddeab25da338))
+* theme toggle location on desktop ([a2bbb9a](https://github.com/pythoninthegrass/lunchjs/commit/a2bbb9a1eaaae87a34620f8338829e99962ef338))
+* theme toggle not responding ([d684a5f](https://github.com/pythoninthegrass/lunchjs/commit/d684a5fc5929728a3aff14885ec0308087cfb858))
+* **ui:** remove jarring Roll Lunch button animation ([9d6ecc1](https://github.com/pythoninthegrass/lunchjs/commit/9d6ecc1763a780b7d6a226eff2c87149ab772ce1))
+
 ## [0.10.0](https://github.com/pythoninthegrass/lunchjs/compare/v0.9.2...v0.10.0) (2025-12-23)
 
 
