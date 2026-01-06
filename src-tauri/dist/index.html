@@ -36,11 +36,9 @@
         <button
           class="btn"
           @click="roll()"
-          :disabled="loading"
           style="display: block; margin: 0 auto"
         >
-          <span x-show="!loading">Roll Lunch</span>
-          <span x-show="loading">Rolling...</span>
+          Roll Lunch
         </button>
 
         <div id="result" class="text-center text-xl font-semibold">
