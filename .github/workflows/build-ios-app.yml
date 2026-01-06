@@ -5,6 +5,17 @@ on:
   workflow_call:
   # Manual trigger for testing
   workflow_dispatch:
+  # PR testing - only when iOS-relevant files change
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src-tauri/**'
+      - 'fastlane/**'
+      - 'Taskfile.yml'
+      - 'taskfiles/**'
+      - 'Gemfile*'
+      - 'package*.json'
+      - '.github/workflows/build-ios-app.yml'
 
 # Cancel in-progress builds when a newer one is triggered
 concurrency:
@@ -60,7 +71,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .task
-          key: ${{ runner.os }}-task-${{ hashFiles('Taskfile.yml', 'taskfiles/**/*.yml', 'src-tauri/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock') }}
+          key: ${{ runner.os }}-task-v1
           restore-keys: |
             ${{ runner.os }}-task-
 
