@@ -37,13 +37,26 @@ tasks:
         ignore_error: true
     interactive: true
 
-  dev:device:
-    desc: "Run on physical iOS device"
+  run:device:
+    desc: "Build release and install on physical iOS device"
     deps: [":npm:install", "init"]
+    vars:
+      DEVICE_ID:
+        sh: xcrun devicectl list devices 2>/dev/null | grep -E "^\s+[0-9A-F-]+\s+" | head -1 | awk '{print $1}' || echo ""
     cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev --open --host
-        ignore_error: true
-    interactive: true
+      - |
+        echo "Building release for iOS device..."
+        cd {{.TAURI_DIR}} && npx tauri ios build
+      - |
+        echo "Installing to device..."
+        DEVICE_ID=$(xcrun devicectl list devices 2>/dev/null | grep -E "iPhone|iPad" | head -1 | awk '{print $3}')
+        if [ -z "$DEVICE_ID" ]; then
+          echo "Error: No iOS device found. Connect your device and try again."
+          exit 1
+        fi
+        echo "Found device: $DEVICE_ID"
+        xcrun devicectl device install app --device "$DEVICE_ID" "{{.TAURI_DIR}}/gen/apple/build/lunch_iOS.xcarchive/Products/Applications/Lunch.app"
+        echo "App installed successfully!"
 
   build:
     desc: "Build for iOS distribution (requires device/provisioning)"
