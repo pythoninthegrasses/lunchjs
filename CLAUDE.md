@@ -67,6 +67,47 @@ fastlane android release
 task clean
 ```
 
+## Miscellaneous Commands
+
+### Git/GitHub
+
+```bash
+# list open PRs
+gh pr list
+
+# checkout a PR locally
+gh pr checkout 19
+
+# view PR details (title, body, files changed)
+gh pr view 19 --json title,body,files
+
+# check PR merge status
+gh pr view 19 --json mergeable,mergeStateStatus
+
+# check PR with status checks
+gh pr view 19 --json mergeable,mergeStateStatus,statusCheckRollup
+
+# rebase current branch on main
+git fetch origin main && git rebase origin/main
+
+# force push after rebase (safe version)
+git push --force-with-lease
+
+# merge PR (squash and delete branch)
+gh pr merge 19 --squash --delete-branch
+
+# view PR comments
+gh api repos/{owner}/{repo}/pulls/19/comments
+
+# create PR with heredoc body
+gh pr create --title "title" --body "$(cat <<'EOF'
+## Summary
+- Change 1
+- Change 2
+EOF
+)"
+```
+
 ## Architecture
 
 **Frontend**: Static HTML pages with Alpine.js for reactivity in `src-tauri/dist/`
