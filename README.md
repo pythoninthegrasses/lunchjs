@@ -110,7 +110,7 @@ task tauri:dev:stable
 task ios
 
 # Development (physical iOS device)
-task ios:device
+task ios:run:device
 
 # Run tests
 task test

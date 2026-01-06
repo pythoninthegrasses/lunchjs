@@ -19,7 +19,7 @@ task tauri:dev:stable
 task ios
 
 # Development (physical iOS device)
-task ios:device
+task ios:run:device
 
 # Run tests
 task test
@@ -130,7 +130,7 @@ Tables:
 **Next Steps**:
 - iOS: Download simulator runtime from Xcode → Settings → Platforms
 - iOS: Test on simulator: `npx tauri ios dev`
-- iOS: Test on device: `npx tauri ios dev --open --host`
+- iOS: Test on device: `task ios:run:device`
 - Android: Test on emulator: `npx tauri android dev` (requires emulator running)
 - Android: Test manual feature validation on emulator
 
