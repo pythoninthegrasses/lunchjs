@@ -145,8 +145,9 @@ tasks:
 
   icons:
     desc: "Generate app icons from source icon"
+    deps: [":npm:install"]
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri icon icons/icon.png
+      - npx tauri icon {{.TAURI_DIR}}/icons/icon.png -o {{.TAURI_DIR}}/icons
     sources:
       - "{{.TAURI_DIR}}/icons/icon.png"
     generates:
