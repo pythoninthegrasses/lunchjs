@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@claude'
 created_date: '2026-01-06 17:32'
-updated_date: '2026-01-06 21:12'
+updated_date: '2026-01-06 21:20'
 labels:
   - ci
   - performance
@@ -31,13 +31,13 @@ Note: The `ios:testflight` task already has fingerprinting configured. CI curren
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 CI caches .task directory between workflow runs
-- [ ] #2 Unchanged source files result in skipped build (task reports 'up to date')
+- [x] #2 Unchanged source files result in skipped build (task reports 'up to date')
 - [x] #3 Changed source files trigger full rebuild as expected
-- [ ] #4 Build artifacts (IPA) are cached and restored when sources unchanged
+- [x] #4 Build artifacts (IPA) are cached and restored when sources unchanged
 - [x] #5 CI logs show 'Task X is up to date' for unchanged tasks
 
 - [x] #6 For push/PR triggers, workflow/job does not run when only non-build paths change (docs/ etc.)
-- [ ] #7 For workflow_dispatch/workflow_call triggers, Taskfile fingerprinting + cache can skip rebuilds when sources unchanged
+- [x] #7 For workflow_dispatch/workflow_call triggers, Taskfile fingerprinting + cache can skip rebuilds when sources unchanged
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -76,4 +76,14 @@ Implemented CI optimization with two approaches:
 - AC #2, #3: The main build task still runs because IPA output isn't persisted
 - AC #4: Would need `actions/cache` for build artifacts (future enhancement)
 - AC #7: Fingerprinting works but full skip requires artifact caching
+
+**3. iOS build artifact caching (AC #2, #4, #7)**
+- Added `actions/cache` for `src-tauri/gen/apple/build` directory
+- Cache key based on source file hashes (same files Task uses for fingerprinting)
+- When cache hits + checksums match → Task reports 'ios:testflight is up to date'
+
+**Final Results:**
+- First run (cache miss): 2m26s
+- Second run (cache hit): 44s (~70% faster)
+- All tasks skip: bundle:install, ios:init, tauri:icons, ios:testflight
 <!-- SECTION:NOTES:END -->
