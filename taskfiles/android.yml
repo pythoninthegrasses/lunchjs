@@ -95,12 +95,29 @@ tasks:
     silent: true
 
   dev:device:
-    desc: "Run on physical Android device"
+    desc: "Run on physical Android device (dev mode with hot-reload)"
     deps: [":npm:install", "init"]
     cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --open --host
+      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --host
         ignore_error: true
     interactive: true
+    silent: true
+
+  run:device:
+    desc: "Build release APK, sign with debug key, and install on physical Android device"
+    deps: [":npm:install", "init"]
+    vars:
+      UNSIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
+      SIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk"
+      DEBUG_KEYSTORE: "{{.HOME}}/.android/debug.keystore"
+      APKSIGNER: "{{.ANDROID_HOME}}/build-tools/35.0.0/apksigner"
+    cmds:
+      - cd {{.TAURI_DIR}} && npx tauri android build --apk true --aab false
+      - |
+        rm -f "{{.SIGNED_APK}}"
+        "{{.APKSIGNER}}" sign --ks "{{.DEBUG_KEYSTORE}}" --ks-pass pass:android --out "{{.SIGNED_APK}}" "{{.UNSIGNED_APK}}"
+        adb install -r "{{.SIGNED_APK}}"
+        adb shell am start -n com.lunch.desktop/.MainActivity
     silent: true
 
   build:
@@ -114,14 +131,14 @@ tasks:
     desc: "Build APK only (for testing/sideloading)"
     deps: [":npm:install", "init"]
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri android build --apk
+      - cd {{.TAURI_DIR}} && npx tauri android build --apk true --aab false
     silent: true
 
   build:aab:
     desc: "Build AAB only (for Google Play)"
     deps: [":npm:install", "init"]
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri android build --aab
+      - cd {{.TAURI_DIR}} && npx tauri android build --apk false --aab true
     silent: true
 
   testflight:

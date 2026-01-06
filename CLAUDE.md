@@ -48,20 +48,26 @@ task ios:testflight
 # Upload to App Store
 task ios:release
 
-# Development (Android emulator - requires Android SDK/NDK setup)
-npx tauri android dev
+# Development (Android emulator)
+task android:dev
 
-# Build (Android release APK and AAB)
-npx tauri android build
+# Development (physical Android device - hot-reload)
+task android:dev:device
 
-# Build via Fastlane (Android)
-fastlane android build
+# Build and install on physical Android device (standalone APK)
+task android:run:device
+
+# Build (Android APK for sideloading)
+task android:build:apk
+
+# Build (Android AAB for Google Play)
+task android:build:aab
 
 # Upload to Google Play Store beta track
-fastlane android beta
+task android:testflight
 
 # Upload to Google Play Store production
-fastlane android release
+task android:release
 
 # Clean build artifacts
 task clean
@@ -176,10 +182,10 @@ Tables:
 
 **Next Steps**:
 - iOS: Download simulator runtime from Xcode → Settings → Platforms
-- iOS: Test on simulator: `npx tauri ios dev`
+- iOS: Test on simulator: `task ios` or `task ios:dev`
 - iOS: Test on device: `task ios:run:device`
-- Android: Test on emulator: `npx tauri android dev` (requires emulator running)
-- Android: Test manual feature validation on emulator
+- Android: Test on emulator: `task android:dev`
+- Android: Test on device: `task android:run:device` (builds release APK, signs with debug key, installs)
 
 ## Context
 
