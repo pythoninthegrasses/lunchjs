@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Allow local networking for development (HTTP to local dev server) -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    <!-- Required for development on physical devices -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Connect to the local development server for live reload.</string>
+</dict>
+</plist>

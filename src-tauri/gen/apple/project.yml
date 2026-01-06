@@ -62,6 +62,7 @@ targets:
     settings:
       base:
         ENABLE_BITCODE: false
+        ENABLE_USER_SCRIPT_SANDBOXING: false
         ARCHS: [arm64]
         VALID_ARCHS: arm64
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon 
