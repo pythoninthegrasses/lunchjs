@@ -3,13 +3,23 @@ html, body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+  touch-action: manipulation;
 }
 
 .app-container {
   height: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* iOS WKWebView viewport fix - svh is more accurate for iOS */
+@supports (min-height: 100svh) {
+  .app-container {
+    min-height: 100svh;
+  }
 }
 
 .main-content {
@@ -64,7 +74,7 @@ html, body {
   display: flex;
   justify-content: center;
   gap: 3rem;
-  padding: 1rem 2rem;
+  padding: 1rem 2rem calc(1rem + env(safe-area-inset-bottom, 0));
   border-top: 1px solid oklch(var(--border));
   background: oklch(var(--background));
 }
@@ -99,17 +109,12 @@ html, body {
     margin-bottom: 0.5vh;
     gap: 1.5rem;
   }
-
-  .home-content {
-    padding-top: 10vh;
-  }
-
 }
 
 /* Theme toggle */
 .theme-toggle {
   position: fixed !important;
-  top: 1rem !important;
+  top: calc(1rem + env(safe-area-inset-top, 0)) !important;
   right: 2.5rem !important;
   z-index: 50;
   color: oklch(var(--foreground));
@@ -120,7 +125,7 @@ html, body {
 @media (max-width: 768px) {
   .theme-toggle {
     right: 1rem;
-    top: 1rem;
+    top: calc(1rem + env(safe-area-inset-top, 0));
   }
 }
 
