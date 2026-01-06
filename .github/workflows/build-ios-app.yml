@@ -17,6 +17,8 @@ jobs:
     env:
       BUNDLE_FROZEN: "true"
       RUBYOPT: "-W0"
+      # Self-hosted runner tool cache - avoids permission denied for /Users/runner
+      RUNNER_TOOL_CACHE: /Users/lance/actions-runner/_tool
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
