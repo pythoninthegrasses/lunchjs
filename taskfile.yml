@@ -9,6 +9,7 @@ dotenv: ['.env']
 
 env:
   FASTLANE_OPT_OUT_USAGE: 1
+  RUBYOPT: "-W0"
 
 includes:
   npm:
