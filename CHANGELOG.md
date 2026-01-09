@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.12.0](https://github.com/pythoninthegrass/lunchjs/compare/v0.11.0...v0.12.0) (2026-01-06)
+
+
+### Features
+
+* **android:** add run:device task for standalone APK install ([150bd0f](https://github.com/pythoninthegrass/lunchjs/commit/150bd0ff8f5a341da89069ff0d11e329f0fce111))
+* **ci:** add path filtering and fix Task cache for skip optimization ([562a000](https://github.com/pythoninthegrass/lunchjs/commit/562a00097d65441e724af85203d56db71fc96f63))
+* **ci:** cache iOS build artifacts for full skip optimization ([a2c269c](https://github.com/pythoninthegrass/lunchjs/commit/a2c269c9bb29f67f48175d1081b004f52a29347b))
+
+
+### Bug Fixes
+
+* **ci:** add explicit npm ci for clean node_modules ([8d7e9e1](https://github.com/pythoninthegrass/lunchjs/commit/8d7e9e14223da0932596686aeb90a477fcb31292))
+* **ci:** run tauri icon from root to find node_modules ([44e1199](https://github.com/pythoninthegrass/lunchjs/commit/44e1199e729e0940762fe6f14951c03fc109476f))
+* **ci:** set RUNNER_TOOL_CACHE for self-hosted runner ([5ff61cc](https://github.com/pythoninthegrass/lunchjs/commit/5ff61cc104babea0e273b3d616226a0a363236e0))
+* **ci:** simplify Homebrew deps for self-hosted runner ([5bdf64f](https://github.com/pythoninthegrass/lunchjs/commit/5bdf64f006463d72cd85d3a246115c1c52a2dc19))
+
+
+### Reverts
+
+* remove RUNNER_TOOL_CACHE (created /Users/runner instead) ([5d2c413](https://github.com/pythoninthegrass/lunchjs/commit/5d2c4132b4de6b6fbe962e8953dc703304f7183a))
+
 ## [0.11.0](https://github.com/pythoninthegrass/lunchjs/compare/v0.10.0...v0.11.0) (2026-01-06)
 
 
