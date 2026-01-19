@@ -124,25 +124,37 @@ def update_tauri_config_version
 end
 
 # Setup temporary keychain for CI environments
+# Only runs on GitHub Actions (not local CI) to avoid GUI prompts on dev machines
 def setup_ci_keychain
-  if ENV['CI']
-    create_keychain(
-      name: CI_KEYCHAIN_NAME,
-      password: CI_KEYCHAIN_PASSWORD,
-      default_keychain: true,
-      unlock: true,
-      timeout: 3600,
-      lock_when_sleeps: false,
-      add_to_search_list: true
-    )
-  end
+  return unless ENV['CI'] && ENV['GITHUB_ACTIONS']
+
+  create_keychain(
+    name: CI_KEYCHAIN_NAME,
+    password: CI_KEYCHAIN_PASSWORD,
+    default_keychain: false,  # don't replace user's default keychain
+    unlock: true,
+    timeout: 3600,
+    lock_when_sleeps: false,
+    add_to_search_list: true
+  )
+end
+
+# Set partition list after match imports keys so codesign can access without GUI prompt
+def set_keychain_partition_list
+  return unless ENV['CI'] && ENV['GITHUB_ACTIONS']
+
+  keychain_path = File.expand_path("~/Library/Keychains/#{CI_KEYCHAIN_NAME}-db")
+  return unless File.exist?(keychain_path)
+
+  sh("security set-key-partition-list -S apple-tool:,apple: -s -k #{CI_KEYCHAIN_PASSWORD.shellescape} #{keychain_path.shellescape}", log: false)
 end
 
 # Cleanup CI keychain
 def cleanup_ci_keychain
-  if ENV['CI']
-    delete_keychain(name: CI_KEYCHAIN_NAME) if File.exist?(File.expand_path("~/Library/Keychains/#{CI_KEYCHAIN_NAME}-db"))
-  end
+  return unless ENV['CI'] && ENV['GITHUB_ACTIONS']
+
+  keychain_path = File.expand_path("~/Library/Keychains/#{CI_KEYCHAIN_NAME}-db")
+  delete_keychain(name: CI_KEYCHAIN_NAME) if File.exist?(keychain_path)
 end
 
 platform :ios do
@@ -156,6 +168,7 @@ platform :ios do
       keychain_name: ENV['CI'] ? CI_KEYCHAIN_NAME : nil,
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
+    set_keychain_partition_list
   end
 
   desc "Build only (no upload) - for testing"
@@ -222,6 +235,7 @@ platform :ios do
       keychain_name: ENV['CI'] ? CI_KEYCHAIN_NAME : nil,
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
+    set_keychain_partition_list
 
     # Update tauri.conf.json with version and unique build number BEFORE init
     # This ensures Tauri uses the correct version when generating the iOS project
@@ -307,6 +321,7 @@ platform :ios do
       keychain_name: ENV['CI'] ? CI_KEYCHAIN_NAME : nil,
       keychain_password: ENV['CI'] ? CI_KEYCHAIN_PASSWORD : nil
     )
+    set_keychain_partition_list
 
     # Update tauri.conf.json with version and unique build number BEFORE init
     # This ensures Tauri uses the correct version when generating the iOS project
