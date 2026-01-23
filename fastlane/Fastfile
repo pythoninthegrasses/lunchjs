@@ -158,6 +158,16 @@ def cleanup_ci_keychain
 end
 
 platform :ios do
+  # Cleanup CI keychain after successful lane completion
+  after_all do |lane|
+    cleanup_ci_keychain
+  end
+
+  # Cleanup CI keychain on error to prevent stale keychains
+  error do |lane, exception|
+    cleanup_ci_keychain
+  end
+
   desc "Sync code signing certificates"
   lane :certificates do
     configure_minio
