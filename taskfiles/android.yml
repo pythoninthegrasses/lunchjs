@@ -129,6 +129,8 @@ tasks:
     desc: "Build release APK and install on emulator (no hot-reload, for testing)"
     deps: [":npm:install", "init", "emulator:keyboard"]
     vars:
+      APK_DIR: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release"
+      RELEASE_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
       UNSIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
       SIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk"
       DEBUG_KEYSTORE: "{{.HOME}}/.android/debug.keystore"
@@ -145,10 +147,26 @@ tasks:
         fi
       - cd {{.TAURI_DIR}} && npx tauri android build --apk true --aab false
       - |
-        rm -f "{{.SIGNED_APK}}"
-        "{{.APKSIGNER}}" sign --ks "{{.DEBUG_KEYSTORE}}" --ks-pass pass:android --out "{{.SIGNED_APK}}" "{{.UNSIGNED_APK}}"
-        adb -s emulator-5554 install -r "{{.SIGNED_APK}}"
-        adb -s emulator-5554 shell am start -n com.lunch.desktop/.MainActivity
+        # Use already-signed release APK if available, otherwise sign unsigned APK with debug key
+        if [ -f "{{.RELEASE_APK}}" ]; then
+          APK="{{.RELEASE_APK}}"
+        elif [ -f "{{.UNSIGNED_APK}}" ]; then
+          echo "Signing unsigned APK..."
+          rm -f "{{.SIGNED_APK}}"
+          "{{.APKSIGNER}}" sign --ks "{{.DEBUG_KEYSTORE}}" --ks-pass pass:android --out "{{.SIGNED_APK}}" "{{.UNSIGNED_APK}}"
+          APK="{{.SIGNED_APK}}"
+        else
+          echo "ERROR: No APK found in {{.APK_DIR}}"
+          ls -la "{{.APK_DIR}}" || true
+          exit 1
+        fi
+        echo "Installing APK..."
+        if ! adb -s emulator-5554 install -r "$APK" 2>&1; then
+          echo "Install failed, uninstalling existing app and retrying..."
+          adb -s emulator-5554 uninstall com.lunch.app || true
+          adb -s emulator-5554 install -r "$APK"
+        fi
+        adb -s emulator-5554 shell am start -n com.lunch.app/com.lunch.desktop.MainActivity
     silent: true
 
   dev:device:
