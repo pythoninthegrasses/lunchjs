@@ -10,9 +10,13 @@ on:
     branches: [main]
     paths:
       - 'src-tauri/**'
+      - '!src-tauri/gen/android/**'
+      - '!src-tauri/icons/android/**'
       - 'fastlane/**'
+      - '!fastlane/metadata/android/**'
       - 'Taskfile.yml'
       - 'taskfiles/**'
+      - '!taskfiles/android.yml'
       - 'Gemfile*'
       - 'package*.json'
       - '.github/workflows/build-ios-app.yml'
