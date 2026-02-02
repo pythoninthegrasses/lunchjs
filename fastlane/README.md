@@ -49,6 +49,43 @@ Upload to App Store
 
 ----
 
+
+## Android
+
+### android build
+
+```sh
+[bundle exec] fastlane android build
+```
+
+Build Android release (AAB and APK)
+
+### android beta
+
+```sh
+[bundle exec] fastlane android beta
+```
+
+Build and upload to Google Play Store beta track
+
+### android internal
+
+```sh
+[bundle exec] fastlane android internal
+```
+
+Build and upload to Google Play Store internal testing track
+
+### android release
+
+```sh
+[bundle exec] fastlane android release
+```
+
+Upload to Google Play Store production
+
+----
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).

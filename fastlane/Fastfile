@@ -95,9 +95,12 @@ end
 # Get a unique build number using timestamp
 # This avoids race conditions with TestFlight API returning stale data
 def get_next_build_number
-  # Format: YYMMDDHHMM (fits in 32-bit integer, always increasing)
-  build_number = Time.now.utc.strftime("%y%m%d%H%M").to_i
-  UI.message("Build number (timestamp): #{build_number}")
+  # Use seconds since Jan 1, 2024 00:00:00 UTC
+  # Max Android versionCode is 2,100,000,000
+  # This gives us ~66 years of headroom (2024-2090)
+  epoch = Time.utc(2024, 1, 1, 0, 0, 0)
+  build_number = (Time.now.utc - epoch).to_i
+  UI.message("Build number (seconds since 2024): #{build_number}")
   build_number
 end
 
@@ -453,25 +456,56 @@ platform :android do
 
     UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
 
-    # Build Android app bundle using Gradle
-    gradle(
-      task: "bundle",
-      build_type: "Release",
-      project_dir: "#{ROOT_DIR}/src-tauri/gen/android"
-    )
+    # Build Android app bundle using Tauri CLI
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
 
     # Upload to Play Store beta track
-    # Requires Google Play Console API credentials set up
-    # Set SUPPLY_JSON_KEY_DATA or SUPPLY_JSON_KEY environment variable
     upload_to_play_store(
+      package_name: "com.lunch.app",
       track: "beta",
-      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab",
+      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab",
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
 
     UI.success("Uploaded to Google Play Store beta track!")
+  end
+
+  desc "Build and upload to Google Play Store internal testing track"
+  lane :internal do
+    # Set ANDROID_HOME for this session
+    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+
+    # Update tauri.conf.json with version from Cargo.toml
+    app_version = get_app_version
+    build_number = get_next_build_number
+
+    tauri_conf_path = "#{ROOT_DIR}/src-tauri/tauri.conf.json"
+    tauri_conf = JSON.parse(File.read(tauri_conf_path))
+    tauri_conf["version"] = app_version
+    tauri_conf["bundle"] ||= {}
+    tauri_conf["bundle"]["android"] ||= {}
+    tauri_conf["bundle"]["android"]["versionCode"] = build_number
+    File.write(tauri_conf_path, JSON.pretty_generate(tauri_conf))
+
+    UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
+
+    # Build Android app bundle using Tauri CLI
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
+
+    # Upload to Play Store internal testing track
+    upload_to_play_store(
+      package_name: "com.lunch.app",
+      track: "internal",
+      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    UI.success("Uploaded to Google Play Store internal testing track!")
   end
 
   desc "Upload to Google Play Store production"
@@ -494,19 +528,14 @@ platform :android do
 
     UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
 
-    # Build Android app bundle using Gradle
-    gradle(
-      task: "bundle",
-      build_type: "Release",
-      project_dir: "#{ROOT_DIR}/src-tauri/gen/android"
-    )
+    # Build Android app bundle using Tauri CLI
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
 
     # Upload to Play Store production track
-    # Requires Google Play Console API credentials set up
-    # Set SUPPLY_JSON_KEY_DATA or SUPPLY_JSON_KEY environment variable
     upload_to_play_store(
+      package_name: "com.lunch.app",
       track: "production",
-      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab",
+      aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab",
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
