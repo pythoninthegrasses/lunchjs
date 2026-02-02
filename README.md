@@ -139,6 +139,27 @@ task ios:testflight
 # Upload to App Store
 task ios:release
 
+# Development (Android emulator)
+task android:dev
+
+# Development (physical Android device - hot-reload)
+task android:dev:device
+
+# Build and install on physical Android device (standalone APK)
+task android:run:device
+
+# Build (Android APK for sideloading)
+task android:build:apk
+
+# Build (Android AAB for Google Play)
+task android:build:aab
+
+# Upload to Google Play Store beta track
+task android:testflight
+
+# Upload to Google Play Store production
+task android:release
+
 # Clean build artifacts
 task clean
 ```
@@ -157,9 +178,16 @@ npx tauri build
 
 # Build (iOS)
 cd src-tauri && npx tauri ios build
+
+# Development (Android emulator)
+cd src-tauri && npx tauri android dev
+
+# Build (Android)
+cd src-tauri && npx tauri android build
 ```
 
 ## Platforms
 
 - macOS (desktop)
 - iOS (mobile)
+- Android (mobile)
