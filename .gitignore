@@ -2,7 +2,12 @@
 .serena/
 .task/
 AGENTS.md
+lunchjs.json
 report.xml
+
+# Android signing
+keystore.properties
+*.jks
 
 # General
 .DS_Store

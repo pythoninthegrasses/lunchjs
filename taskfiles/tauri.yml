@@ -129,7 +129,7 @@ tasks:
     deps: [":npm:install"]
     env:
       RUSTUP_TOOLCHAIN: nightly
-      RUSTFLAGS: "-Z threads=8"
+      RUSTFLAGS: "-Z threads=16"
     cmds:
       - cmd: cd {{.TAURI_DIR}} && npx tauri dev -- --features devtools
         ignore_error: true

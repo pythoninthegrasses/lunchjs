@@ -43,6 +43,9 @@
     "iOS": {
       "developmentTeam": "654C9Y2C3F",
       "bundleVersion": "2512231800"
+    },
+    "android": {
+      "versionCode": 65985798
     }
   },
   "plugins": {
@@ -50,5 +53,5 @@
       "open": true
     }
   },
-  "version": "0.10.0"
+  "version": "0.12.0"
 }

@@ -17,6 +17,32 @@ vars:
   ANDROID_X64_TARGET: "x86_64-linux-android"
 
 tasks:
+  debug:
+    cmds:
+      - printenv | grep ANDROID_
+    silent: true
+
+  keystore:setup:
+    desc: "Generate keystore.properties from environment variables"
+    vars:
+      KEYSTORE_PROPS: "{{.TAURI_DIR}}/gen/android/keystore.properties"
+    preconditions:
+      - sh: test -n "$ANDROID_KEYSTORE_PASSWORD"
+        msg: "ANDROID_KEYSTORE_PASSWORD environment variable is not set"
+      - sh: test -n "$ANDROID_KEYSTORE_PATH"
+        msg: "ANDROID_KEYSTORE_PATH environment variable is not set"
+      - sh: test -f "$ANDROID_KEYSTORE_PATH"
+        msg: "Keystore file not found at $ANDROID_KEYSTORE_PATH"
+    cmds:
+      - |
+        cat > "{{.KEYSTORE_PROPS}}" <<EOF
+        keyAlias=lunch
+        password=$ANDROID_KEYSTORE_PASSWORD
+        storeFile=$ANDROID_KEYSTORE_PATH
+        EOF
+        echo "Created {{.KEYSTORE_PROPS}}"
+    silent: true
+
   init:
     desc: "Initialize Android project"
     deps: [":npm:install"]
@@ -117,7 +143,7 @@ tasks:
         rm -f "{{.SIGNED_APK}}"
         "{{.APKSIGNER}}" sign --ks "{{.DEBUG_KEYSTORE}}" --ks-pass pass:android --out "{{.SIGNED_APK}}" "{{.UNSIGNED_APK}}"
         adb install -r "{{.SIGNED_APK}}"
-        adb shell am start -n com.lunch.desktop/.MainActivity
+        adb shell am start -n com.lunch.app/com.lunch.desktop.MainActivity
     silent: true
 
   build:
@@ -139,6 +165,36 @@ tasks:
     deps: [":npm:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build --apk false --aab true
+    silent: true
+
+  verify:
+    desc: "Verify AAB signature"
+    vars:
+      AAB: "{{.TAURI_DIR}}/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab"
+    preconditions:
+      - sh: test -f "{{.AAB}}"
+        msg: "AAB not found. Run 'task android:build:aab' first."
+    cmds:
+      - jarsigner -verify "{{.AAB}}"
+    silent: true
+
+  internal:
+    desc: "Build and upload to Google Play internal testing track"
+    deps: [":npm:install", "init", ":tauri:icons", ":bundle:install"]
+    sources:
+      - "{{.TAURI_DIR}}/src/**/*.rs"
+      - "{{.TAURI_DIR}}/Cargo.toml"
+      - "{{.TAURI_DIR}}/Cargo.lock"
+      - "{{.TAURI_DIR}}/tauri.conf.json"
+      - "{{.TAURI_DIR}}/dist/**/*"
+      - "{{.TAURI_DIR}}/icons/icon.png"
+      - "{{.ROOT_DIR}}/fastlane/Fastfile"
+      - "{{.ROOT_DIR}}/fastlane/Appfile"
+    generates:
+      - "{{.TAURI_DIR}}/gen/android/app/build/outputs/bundle/release/*.aab"
+    method: checksum
+    cmds:
+      - bundle exec fastlane android internal
     silent: true
 
   testflight:

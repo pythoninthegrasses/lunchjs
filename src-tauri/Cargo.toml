@@ -35,6 +35,9 @@ devtools = ["tauri-plugin-devtools"]
 debug = 0
 split-debuginfo = "unpacked"
 
+[profile.dev.build-override]
+opt-level = 3  # Optimize proc-macros and build scripts even in dev
+
 [profile.release]
 panic = "abort"
 codegen-units = 1
