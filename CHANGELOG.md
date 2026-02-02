@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.13.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.12.0...v0.13.0) (2026-02-02)
+
+
+### Features
+
+* android version ([4d2aec5](https://github.com/pythoninthegrasses/lunchjs/commit/4d2aec543b84494aa66de99ab903936b12c1d20a))
+
+
+### Bug Fixes
+
+* **deps:** bundle renovate dependency updates ([#35](https://github.com/pythoninthegrasses/lunchjs/issues/35)) ([b0bd90e](https://github.com/pythoninthegrasses/lunchjs/commit/b0bd90e3d7bc59914abb72663d36de5214122a0a))
+* **deps:** update dependency com.android.tools.build:gradle to v8.13.2 ([#25](https://github.com/pythoninthegrasses/lunchjs/issues/25)) ([516236d](https://github.com/pythoninthegrasses/lunchjs/commit/516236dc04af5e1158c89959fbe098a58d63ba0d))
+* **fastlane:** restrict CI keychain to GitHub Actions only ([f5ae481](https://github.com/pythoninthegrasses/lunchjs/commit/f5ae4815968c8d0493742e2cc97a815a4244f51a))
+* **ios:** cleanup CI keychain after workflow completion ([4ecfd66](https://github.com/pythoninthegrasses/lunchjs/commit/4ecfd66b795289492a772490174bcde5d73cb8c5))
+
 ## [0.12.0](https://github.com/pythoninthegrass/lunchjs/compare/v0.11.0...v0.12.0) (2026-01-06)
 
 
