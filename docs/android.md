@@ -35,7 +35,8 @@ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-andro
 
 | Setting | Value |
 |---------|-------|
-| Package name | `com.lunch.app` |
+| Application ID | `com.lunch.app` (used for install/uninstall) |
+| Namespace | `com.lunch.desktop` (used for class paths) |
 | Min SDK | 24 (Android 7.0) |
 | Target SDK | 36 |
 | Build location | `src-tauri/gen/android/` |
@@ -198,6 +199,7 @@ All lanes automatically:
 | `task android:dev` | Run on emulator |
 | `task android:dev:device` | Run on device (hot-reload) |
 | `task android:run:device` | Build and install release APK on device |
+| `task android:run:emulator` | Build and install release APK on emulator |
 | `task android:build` | Build APK and AAB |
 | `task android:build:apk` | Build APK only |
 | `task android:build:aab` | Build signed AAB |
@@ -215,9 +217,12 @@ All lanes automatically:
 
 | Type | Path |
 |------|------|
-| Unsigned APK | `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk` |
+| Release APK (with keystore) | `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk` |
+| Unsigned APK (no keystore) | `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk` |
 | Signed APK (debug key) | `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk` |
 | Signed AAB | `src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab` |
+
+Note: If `keystore.properties` is configured, the build produces a signed `app-universal-release.apk`. Without a keystore, it produces `app-universal-release-unsigned.apk` which `task android:run:emulator` signs with the debug key.
 
 ---
 
@@ -237,11 +242,63 @@ Run keyboard configuration:
 task android:emulator:setup
 ```
 
+### "Failed to request http://..." Error (devUrl Cached)
+
+If the app shows "Failed to request http://X.X.X.X:1430/" on startup, the Rust build cache has a stale dev server URL baked in. Clean and rebuild:
+
+```bash
+# Clean Rust Android targets and Gradle cache
+rm -rf src-tauri/target/aarch64-linux-android \
+       src-tauri/target/armv7-linux-androideabi \
+       src-tauri/target/i686-linux-android \
+       src-tauri/target/x86_64-linux-android \
+       src-tauri/gen/android/app/build \
+       src-tauri/gen/android/.gradle
+
+# Uninstall old app from emulator
+adb -s emulator-5554 uninstall com.lunch.app
+
+# Rebuild
+task android:run:emulator
+```
+
+### Signature Mismatch (INSTALL_FAILED_UPDATE_INCOMPATIBLE)
+
+If install fails with signature mismatch, uninstall the existing app first:
+
+```bash
+adb -s emulator-5554 uninstall com.lunch.app
+```
+
+### Black Screen / GPU Errors (EmulatedEglImage)
+
+If emulator shows black screen with `Failed to find EmulatedEglImage` errors, fix the GPU config:
+
+```bash
+# Fix emulator GPU settings
+cd ~/.android/avd/pixel_7.avd
+sed -i '' 's/hw.gpu.enabled = no/hw.gpu.enabled = yes/' config.ini
+sed -i '' 's/hw.gpu.mode = auto/hw.gpu.mode = host/' config.ini
+
+# Remove corrupted snapshot
+rm -rf snapshots/default_boot
+```
+
+### Full Android Clean (Nuclear Option)
+
+```bash
+task android:clean
+rm -rf src-tauri/target/*-linux-android*
+adb -s emulator-5554 uninstall com.lunch.app
+```
+
 ### Upload Fails with Package Name Mismatch
 
 Verify package name is `com.lunch.app` in:
-- `src-tauri/gen/android/app/build.gradle.kts` (namespace and applicationId)
+- `src-tauri/gen/android/app/build.gradle.kts` (applicationId)
 - Google Play Console app settings
+
+Note: The namespace (`com.lunch.desktop`) is different from the applicationId (`com.lunch.app`).
 
 ### Version Code Too Low
 
@@ -255,8 +312,8 @@ Fastlane uses timestamp-based version codes. If Play Console rejects the build, 
 src-tauri/gen/android/
 ├── app/
 │   ├── build.gradle.kts      # Package name, signing config
-│   ├── src/main/java/com/lunch/app/
-│   │   └── MainActivity.kt   # Entry point
+│   ├── src/main/java/com/lunch/desktop/
+│   │   └── MainActivity.kt   # Entry point (namespace: com.lunch.desktop)
 │   └── build/outputs/
 │       ├── apk/              # APK builds
 │       └── bundle/           # AAB builds

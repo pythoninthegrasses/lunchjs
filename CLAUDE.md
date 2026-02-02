@@ -165,7 +165,8 @@ Tables:
 - Rust targets installed (`aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android`)
 - Android project initialized at `src-tauri/gen/android/`
 - Fastlane configured with build, beta, and release lanes
-- Package name: `com.lunch.desktop`
+- Application ID: `com.lunch.app` (used for install/uninstall)
+- Namespace: `com.lunch.desktop` (used for class paths)
 - Required environment variables (add to `~/.bash_profile`):
   ```bash
   # Java
@@ -186,6 +187,58 @@ Tables:
 - iOS: Test on device: `task ios:run:device`
 - Android: Test on emulator: `task android:dev`
 - Android: Test on device: `task android:run:device` (builds release APK, signs with debug key, installs)
+
+## Android Emulator Troubleshooting
+
+### "Failed to request http://..." error (devUrl cached)
+
+If the app shows "Failed to request http://X.X.X.X:1430/" on startup, the Rust build cache has a stale dev server URL baked in. Clean and rebuild:
+
+```bash
+# Clean Rust Android targets and Gradle cache
+rm -rf src-tauri/target/aarch64-linux-android \
+       src-tauri/target/armv7-linux-androideabi \
+       src-tauri/target/i686-linux-android \
+       src-tauri/target/x86_64-linux-android \
+       src-tauri/gen/android/app/build \
+       src-tauri/gen/android/.gradle
+
+# Uninstall old app from emulator
+adb -s emulator-5554 uninstall com.lunch.app
+
+# Rebuild
+task android:run:emulator
+```
+
+### Signature mismatch error (INSTALL_FAILED_UPDATE_INCOMPATIBLE)
+
+If install fails with signature mismatch, uninstall the existing app first:
+
+```bash
+adb -s emulator-5554 uninstall com.lunch.app
+```
+
+### Black screen / GPU errors (EmulatedEglImage)
+
+If emulator shows black screen with `Failed to find EmulatedEglImage` errors, fix the GPU config:
+
+```bash
+# Fix emulator GPU settings
+cd ~/.android/avd/pixel_7.avd
+sed -i '' 's/hw.gpu.enabled = no/hw.gpu.enabled = yes/' config.ini
+sed -i '' 's/hw.gpu.mode = auto/hw.gpu.mode = host/' config.ini
+
+# Remove corrupted snapshot
+rm -rf snapshots/default_boot
+```
+
+### Full Android clean (nuclear option)
+
+```bash
+task android:clean
+rm -rf src-tauri/target/*-linux-android*
+adb -s emulator-5554 uninstall com.lunch.app
+```
 
 ## Context
 
