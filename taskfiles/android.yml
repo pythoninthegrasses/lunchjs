@@ -104,7 +104,12 @@ tasks:
   dev:
     desc: "Run on Android emulator"
     deps: [":npm:install", "init", "emulator:keyboard"]
+    env:
+      ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: "0"
     cmds:
+      - defer: |
+          pkill -f "tauri android dev" 2>/dev/null || true
+          pkill -9 -f "qemu-system-aarch64" 2>/dev/null || true
       - |
         (
           while ! adb devices | grep -q "emulator"; do sleep 1; done
@@ -115,15 +120,42 @@ tasks:
             echo "Soft keyboard auto-hidden"
           fi
         ) &
-      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev "{{.ANDROID_EMULATOR}}"
+      - cmd: cd {{.TAURI_DIR}} && npx tauri android dev "{{.ANDROID_EMULATOR}}" --host
         ignore_error: true
     interactive: true
+    silent: true
+
+  run:emulator:
+    desc: "Build release APK and install on emulator (no hot-reload, for testing)"
+    deps: [":npm:install", "init", "emulator:keyboard"]
+    vars:
+      UNSIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
+      SIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk"
+      DEBUG_KEYSTORE: "{{.HOME}}/.android/debug.keystore"
+      APKSIGNER: "{{.ANDROID_HOME}}/build-tools/35.0.0/apksigner"
+    cmds:
+      - |
+        # Start emulator if not running
+        if ! adb devices | grep -q "emulator"; then
+          echo "Starting emulator..."
+          "{{.ANDROID_HOME}}/emulator/emulator" -avd "{{.ANDROID_EMULATOR}}" &
+          while ! adb devices | grep -q "emulator"; do sleep 1; done
+          adb wait-for-device
+          sleep 5
+        fi
+      - cd {{.TAURI_DIR}} && npx tauri android build --apk true --aab false
+      - |
+        rm -f "{{.SIGNED_APK}}"
+        "{{.APKSIGNER}}" sign --ks "{{.DEBUG_KEYSTORE}}" --ks-pass pass:android --out "{{.SIGNED_APK}}" "{{.UNSIGNED_APK}}"
+        adb -s emulator-5554 install -r "{{.SIGNED_APK}}"
+        adb -s emulator-5554 shell am start -n com.lunch.desktop/.MainActivity
     silent: true
 
   dev:device:
     desc: "Run on physical Android device (dev mode with hot-reload)"
     deps: [":npm:install", "init"]
     cmds:
+      - defer: pkill -f "tauri android dev" 2>/dev/null || true
       - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --host
         ignore_error: true
     interactive: true
