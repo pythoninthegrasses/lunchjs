@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.14.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.13.0...v0.14.0) (2026-02-03)
+
+
+### Features
+
+* **android:** add JAVA_HOME and NDK_HOME to taskfile env ([9f3ae02](https://github.com/pythoninthegrasses/lunchjs/commit/9f3ae020176db9cee390121934b352054b4f094f))
+* **android:** add setup task for installing dependencies ([1ae12f7](https://github.com/pythoninthegrasses/lunchjs/commit/1ae12f71ef6f88353fcc6e1acd59e1eac5b61af0))
+* **android:** use GOOGLE_PLAY_TRACK env var for upload track ([aba2700](https://github.com/pythoninthegrasses/lunchjs/commit/aba27004c549b58e97e383e4ccdb296432dd03a0))
+
+
+### Bug Fixes
+
+* **android:** add JDK to setup task dependencies ([a342c55](https://github.com/pythoninthegrasses/lunchjs/commit/a342c5546486792ccfce334986cc45018918c4ff))
+* **android:** use openjdk@21 LTS instead of [@24](https://github.com/24) ([588d161](https://github.com/pythoninthegrasses/lunchjs/commit/588d1615cc50c3ba815127725357312844e13bbc))
+* **ci:** add JAVA_HOME for Android Gradle build ([c3b0437](https://github.com/pythoninthegrasses/lunchjs/commit/c3b043702753f15e2ba5b69e9b8966ce3b92c2e2))
+* **fastlane:** inherit Android env vars from workflow ([1d156f1](https://github.com/pythoninthegrasses/lunchjs/commit/1d156f1af9db9dd112b5cf7b57c77fc6ccf1e836))
+* **taskfile:** auto-accept Android SDK license in setup ([e560ac6](https://github.com/pythoninthegrasses/lunchjs/commit/e560ac6f9bcaaf26f02b73c15118955c4cf66bad))
+* **taskfile:** make android:setup idempotent ([c99c88b](https://github.com/pythoninthegrasses/lunchjs/commit/c99c88b6022b582f8bd4cb433ba425845c5087ed))
+
 ## [0.13.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.12.0...v0.13.0) (2026-02-02)
 
 

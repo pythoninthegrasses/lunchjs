@@ -1,6 +1,6 @@
 [package]
 name = "lunch"
-version = "0.13.0"
+version = "0.14.0"
 description = "Cross-platform restaurant selector"
 authors = ["Lance"]
 license = "Unlicense"
