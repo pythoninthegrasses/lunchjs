@@ -1,0 +1,249 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Rust source and config
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '**/build.rs'
+      # JavaScript source
+      - '**/*.js'
+      - '**/*.mjs'
+      # Frontend assets
+      - '**/*.html'
+      - '**/*.css'
+      # Deno/Node config
+      - '**/deno.jsonc'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/vitest.config.js'
+      - '**/playwright.config.js'
+      # Tauri config
+      - '**/tauri.conf.json'
+      # Task runner config
+      - 'Taskfile.yml'
+      - 'taskfiles/**'
+      # Test files
+      - 'tests/**/*'
+      - '**/tests/**/*'
+      - '**/__tests__/**/*'
+      # CI workflow itself
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      # Rust source and config
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '**/build.rs'
+      # JavaScript source
+      - '**/*.js'
+      - '**/*.mjs'
+      # Frontend assets
+      - '**/*.html'
+      - '**/*.css'
+      # Deno/Node config
+      - '**/deno.jsonc'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/vitest.config.js'
+      - '**/playwright.config.js'
+      # Tauri config
+      - '**/tauri.conf.json'
+      # Task runner config
+      - 'Taskfile.yml'
+      - 'taskfiles/**'
+      # Test files
+      - 'tests/**/*'
+      - '**/tests/**/*'
+      - '**/__tests__/**/*'
+      # CI workflow itself
+      - '.github/workflows/test.yml'
+
+# Cancel in-progress runs when a new push supersedes them
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Linting and code quality
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check Deno formatting
+        run: deno fmt --check
+
+      - name: Run Deno lint
+        run: deno lint
+
+  # Vitest unit tests with coverage
+  vitest-tests:
+    name: Vitest Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src-tauri/dist/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./src-tauri/dist
+        run: npm ci
+
+      - name: Run Vitest with coverage
+        working-directory: ./src-tauri/dist
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-coverage
+          path: src-tauri/dist/coverage/
+          retention-days: 30
+
+  # Frontend E2E tests with Playwright
+  playwright-tests:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src-tauri/dist/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./src-tauri/dist
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./src-tauri/dist
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        working-directory: ./src-tauri/dist
+        run: npx playwright test
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: src-tauri/dist/playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: src-tauri/dist/test-results/
+          retention-days: 30
+
+  # Rust backend tests
+  rust-tests:
+    name: Rust Backend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Install Tauri system dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Run Rust tests
+        run: cargo nextest run --manifest-path src-tauri/Cargo.toml
+
+  # Build verification
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Tauri system dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Check Rust build
+        run: cargo check --manifest-path src-tauri/Cargo.toml --all-features
