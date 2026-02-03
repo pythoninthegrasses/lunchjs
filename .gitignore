@@ -261,5 +261,10 @@ build-iPhoneSimulator/
 !src-tauri/apple/**
 !src-tauri/dist/**
 
+# Exclude test artifacts from src-tauri/dist (after the !src-tauri/dist/** negation)
+src-tauri/dist/coverage/
+src-tauri/dist/playwright-report/
+src-tauri/dist/test-results/
+
 # Has to come last to cover src-tauri/dist
 **/node_modules/
