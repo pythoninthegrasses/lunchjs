@@ -459,17 +459,18 @@ platform :android do
     # Build Android app bundle using Tauri CLI
     sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
 
-    # Upload to Play Store beta track
+    # Upload to Play Store (track from env var, default: alpha)
+    track = ENV['GOOGLE_PLAY_TRACK'] || "alpha"
     upload_to_play_store(
       package_name: "com.lunch.app",
-      track: "beta",
+      track: track,
       aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab",
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
 
-    UI.success("Uploaded to Google Play Store beta track!")
+    UI.success("Uploaded to Google Play Store #{track} track!")
   end
 
   desc "Build and upload to Google Play Store internal testing track"
@@ -495,17 +496,18 @@ platform :android do
     # Build Android app bundle using Tauri CLI
     sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
 
-    # Upload to Play Store internal testing track
+    # Upload to Play Store (track from env var, default: internal)
+    track = ENV['GOOGLE_PLAY_TRACK'] || "internal"
     upload_to_play_store(
       package_name: "com.lunch.app",
-      track: "internal",
+      track: track,
       aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab",
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
 
-    UI.success("Uploaded to Google Play Store internal testing track!")
+    UI.success("Uploaded to Google Play Store #{track} track!")
   end
 
   desc "Upload to Google Play Store production"
@@ -531,16 +533,17 @@ platform :android do
     # Build Android app bundle using Tauri CLI
     sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
 
-    # Upload to Play Store production track
+    # Upload to Play Store (track from env var, default: production)
+    track = ENV['GOOGLE_PLAY_TRACK'] || "production"
     upload_to_play_store(
       package_name: "com.lunch.app",
-      track: "production",
+      track: track,
       aab: "#{ROOT_DIR}/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab",
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
 
-    UI.success("Uploaded to Google Play Store production track!")
+    UI.success("Uploaded to Google Play Store #{track} track!")
   end
 end

@@ -8,6 +8,7 @@ env:
   ANDROID_HOME: '{{.ANDROID_HOME | default "/opt/homebrew/share/android-commandlinetools"}}'
   ANDROID_NDK_HOME: '{{.ANDROID_NDK_HOME | default "/opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358"}}'
   NDK_HOME: '{{.NDK_HOME | default "/opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358"}}'
+  GOOGLE_PLAY_TRACK: '{{.GOOGLE_PLAY_TRACK | default "alpha"}}'
 
 vars:
   TAURI_DIR: "{{.ROOT_DIR}}/src-tauri"
