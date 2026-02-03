@@ -1,0 +1,109 @@
+name: Build Android App
+
+on:
+  # Called by release-please when a new version is released
+  workflow_call:
+  # Manual trigger for testing
+  workflow_dispatch:
+  # PR testing - only when Android-relevant files change
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src-tauri/**'
+      - '!src-tauri/gen/apple/**'
+      - '!src-tauri/icons/ios/**'
+      - 'fastlane/**'
+      - '!fastlane/metadata/ios/**'
+      - 'Taskfile.yml'
+      - 'taskfiles/**'
+      - '!taskfiles/ios.yml'
+      - 'Gemfile*'
+      - 'package*.json'
+      - '.github/workflows/build-android-app.yml'
+
+# Cancel in-progress builds when a newer one is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: self-hosted
+    env:
+      BUNDLE_FROZEN: "true"
+      RUBYOPT: "-W0"
+      ANDROID_HOME: /opt/homebrew/share/android-commandlinetools
+      ANDROID_NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0.1'
+          bundler-cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          cache-targets: true
+          cache-on-failure: true
+
+      - name: Cache Task checksums
+        uses: actions/cache@v5
+        with:
+          path: .task
+          key: ${{ runner.os }}-task-v1
+          restore-keys: |
+            ${{ runner.os }}-task-
+
+      - name: Cache Android build artifacts
+        uses: actions/cache@v5
+        with:
+          path: src-tauri/gen/android/app/build
+          key: ${{ runner.os }}-android-build-${{ hashFiles('src-tauri/src/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock', 'src-tauri/tauri.conf.json', 'src-tauri/dist/**/*', 'src-tauri/icons/icon.png', 'fastlane/Fastfile', 'fastlane/Appfile') }}
+          restore-keys: |
+            ${{ runner.os }}-android-build-
+
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
+      - name: Setup Android signing
+        env:
+          ANDROID_KEY_ALIAS: lunch
+        run: |
+          cd src-tauri/gen/android
+          echo "keyAlias=$ANDROID_KEY_ALIAS" > keystore.properties
+          echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
+          base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
+          echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
+
+      - name: Build and upload to Google Play
+        run: task android:testflight
+        env:
+          FASTLANE_OPT_OUT_USAGE: 1
+          SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
+      - name: Cleanup signing artifacts
+        if: always()
+        run: |
+          rm -f src-tauri/gen/android/keystore.properties
+          rm -f "$RUNNER_TEMP/keystore.jks"

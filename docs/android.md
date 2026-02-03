@@ -172,6 +172,20 @@ task android:testflight
 task android:release
 ```
 
+### CI/CD (GitHub Actions)
+
+The workflow `.github/workflows/build-android-app.yml` automates builds on PR and release.
+
+**Required GitHub Secrets:**
+
+| Secret | Description | How to Generate |
+|--------|-------------|-----------------|
+| `ANDROID_KEY_PASSWORD` | Keystore password | Same as `ANDROID_KEYSTORE_PASSWORD` in `.env` |
+| `ANDROID_KEY_BASE64` | Base64-encoded keystore | `base64 -i ~/lunchjs-release.jks \| tr -d '\n'` |
+| `GOOGLE_PLAY_JSON_KEY` | Service account JSON contents | Copy contents of service account JSON file |
+
+The key alias `lunch` is hardcoded in the workflow.
+
 ---
 
 ## Fastlane Lanes
