@@ -27,26 +27,8 @@ tasks:
 
   setup:
     desc: "Install Android development dependencies"
-    env:
-      JAVA_HOME: /opt/homebrew/opt/openjdk@21
-      PATH: /opt/homebrew/opt/openjdk@21/bin:{{.PATH}}
+    deps: [setup:jdk, setup:sdk, setup:ndk, setup:rust-targets]
     cmds:
-      - |
-        echo "Installing JDK and Android SDK..."
-        for pkg in openjdk@21 android-commandlinetools; do
-          brew list "$pkg" &>/dev/null || brew install "$pkg"
-        done
-      - |
-        NDK_DIR="{{.ANDROID_HOME}}/ndk/28.2.13676358"
-        if [ -d "$NDK_DIR" ]; then
-          echo "Android NDK already installed at $NDK_DIR"
-        else
-          echo "Installing Android NDK..."
-          yes | sdkmanager --install "ndk;28.2.13676358"
-        fi
-      - |
-        echo "Adding Android Rust targets..."
-        rustup target add {{.ANDROID_ARM64_TARGET}} {{.ANDROID_ARMV7_TARGET}} {{.ANDROID_X86_TARGET}} {{.ANDROID_X64_TARGET}}
       - |
         echo "Android setup complete!"
         echo "Add these to your shell profile:"
@@ -56,6 +38,53 @@ tasks:
         echo '  export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"'
         echo '  export NDK_HOME="$ANDROID_NDK_HOME"'
         echo '  export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"'
+    silent: true
+
+  setup:jdk:
+    desc: "Install OpenJDK 21"
+    internal: true
+    status:
+      - test -d /opt/homebrew/opt/openjdk@21
+    cmds:
+      - echo "Installing OpenJDK 21..."
+      - brew install openjdk@21
+    silent: true
+
+  setup:sdk:
+    desc: "Install Android SDK command-line tools"
+    internal: true
+    status:
+      - test -d {{.ANDROID_HOME}}/cmdline-tools
+    cmds:
+      - echo "Installing Android SDK..."
+      - brew install android-commandlinetools
+    silent: true
+
+  setup:ndk:
+    desc: "Install Android NDK"
+    internal: true
+    deps: [setup:jdk, setup:sdk]
+    env:
+      JAVA_HOME: /opt/homebrew/opt/openjdk@21
+      PATH: /opt/homebrew/opt/openjdk@21/bin:{{.PATH}}
+    status:
+      - test -d {{.ANDROID_HOME}}/ndk/28.2.13676358
+    cmds:
+      - echo "Installing Android NDK..."
+      - yes | sdkmanager --install "ndk;28.2.13676358"
+    silent: true
+
+  setup:rust-targets:
+    desc: "Install Rust Android targets"
+    internal: true
+    status:
+      - rustup target list --installed | grep -q {{.ANDROID_ARM64_TARGET}}
+      - rustup target list --installed | grep -q {{.ANDROID_ARMV7_TARGET}}
+      - rustup target list --installed | grep -q {{.ANDROID_X86_TARGET}}
+      - rustup target list --installed | grep -q {{.ANDROID_X64_TARGET}}
+    cmds:
+      - echo "Adding Android Rust targets..."
+      - rustup target add {{.ANDROID_ARM64_TARGET}} {{.ANDROID_ARMV7_TARGET}} {{.ANDROID_X86_TARGET}} {{.ANDROID_X64_TARGET}}
     silent: true
 
   keystore:setup:
