@@ -412,9 +412,11 @@ end
 platform :android do
   desc "Build Android release (AAB and APK)"
   lane :build do
-    # Set ANDROID_HOME for this session
-    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
-    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    # Set Android environment for this session (inherit from env or use defaults)
+    ENV['JAVA_HOME'] ||= "/opt/homebrew/opt/openjdk@21"
+    ENV['ANDROID_HOME'] ||= "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] ||= "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    ENV['NDK_HOME'] ||= ENV['ANDROID_NDK_HOME']
 
     # Update tauri.conf.json with version from Cargo.toml
     app_version = get_app_version
@@ -438,9 +440,11 @@ platform :android do
 
   desc "Build and upload to Google Play Store beta track"
   lane :beta do
-    # Set ANDROID_HOME for this session
-    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
-    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    # Set Android environment for this session (inherit from env or use defaults)
+    ENV['JAVA_HOME'] ||= "/opt/homebrew/opt/openjdk@21"
+    ENV['ANDROID_HOME'] ||= "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] ||= "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    ENV['NDK_HOME'] ||= ENV['ANDROID_NDK_HOME']
 
     # Update tauri.conf.json with version from Cargo.toml
     app_version = get_app_version
@@ -475,9 +479,11 @@ platform :android do
 
   desc "Build and upload to Google Play Store internal testing track"
   lane :internal do
-    # Set ANDROID_HOME for this session
-    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
-    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    # Set Android environment for this session (inherit from env or use defaults)
+    ENV['JAVA_HOME'] ||= "/opt/homebrew/opt/openjdk@21"
+    ENV['ANDROID_HOME'] ||= "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] ||= "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    ENV['NDK_HOME'] ||= ENV['ANDROID_NDK_HOME']
 
     # Update tauri.conf.json with version from Cargo.toml
     app_version = get_app_version
@@ -512,9 +518,11 @@ platform :android do
 
   desc "Upload to Google Play Store production"
   lane :release do
-    # Set ANDROID_HOME for this session
-    ENV['ANDROID_HOME'] = "/opt/homebrew/share/android-commandlinetools"
-    ENV['ANDROID_NDK_HOME'] = "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    # Set Android environment for this session (inherit from env or use defaults)
+    ENV['JAVA_HOME'] ||= "/opt/homebrew/opt/openjdk@21"
+    ENV['ANDROID_HOME'] ||= "/opt/homebrew/share/android-commandlinetools"
+    ENV['ANDROID_NDK_HOME'] ||= "#{ENV['ANDROID_HOME']}/ndk/28.2.13676358"
+    ENV['NDK_HOME'] ||= ENV['ANDROID_NDK_HOME']
 
     # Update tauri.conf.json with version from Cargo.toml
     app_version = get_app_version
