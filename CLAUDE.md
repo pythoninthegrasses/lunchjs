@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LunchJS is a cross-platform restaurant selector app built with Tauri v2 + Alpine.js, targeting macOS desktop, iOS mobile, and Android mobile. The app randomly selects restaurants from a user-maintained list, with category filtering (cheap/normal).
 
+## General Guidelines
+
+- ALWAYS use atomic commits throughout development
+  - Each commit should represent a single, complete, and coherent unit of work
+  - Commit frequently after completing subtasks or reaching meaningful progress points
+  - Use `git add -i` (interactive mode) or `git add -p` (patch mode) to stage specific changes
+- NEVER create *.backup files. This is a version controlled repo
+
 ## Development Commands
 
 ```bash
@@ -262,17 +270,109 @@ ssh mini "grep minio /etc/hosts"
 # Should show: 10.5.162.10 api.minio.nwcrane.com
 ```
 
+## Atomic Commit Workflow
+
+Atomic commits make code reviews easier, improve history browsing, and simplify reverting changes.
+
+### Interactive Staging
+
+```bash
+# Interactive mode - select which files/hunks to stage
+git add -i
+
+# Patch mode - directly choose hunks to stage
+git add -p <file>
+
+# Unstage specific hunks
+git reset --patch
+```
+
+**Patch Mode Commands** (after `git add -p`):
+- `y`: Stage this hunk
+- `n`: Don't stage this hunk
+- `s`: Split the hunk into smaller hunks
+- `e`: Manually edit the hunk
+- `q`: Quit without staging remaining hunks
+
+### Before Pushing
+
+After completing development with multiple atomic commits:
+1. Review your commit history: `git log --oneline`
+2. When ready to push, consider squashing related commits: `git rebase -i HEAD~N`
+
+## Tauri MCP Tool Reference
+
+When connected via MCP bridge, use these tools for debugging:
+
+**Session Management:**
+```javascript
+driver_session({ action: "start", port: 9223 })   // Start session
+driver_session({ action: "status" })              // Check connection
+driver_session({ action: "stop" })                // End session
+```
+
+**Screenshots:**
+```javascript
+webview_screenshot({ format: "png" })
+webview_screenshot({ format: "png", filePath: "/tmp/debug.png" })
+```
+
+**Console & Log Reading:**
+```javascript
+read_logs({ source: "console", lines: 50 })
+read_logs({ source: "console", filter: "error", lines: 100 })
+```
+
+**IPC Monitoring:**
+```javascript
+ipc_monitor({ action: "start" })     // Start monitoring
+ipc_get_captured({})                 // Get captured calls
+ipc_monitor({ action: "stop" })      // Stop monitoring
+```
+
+**UI Interaction:**
+```javascript
+webview_interact({ action: "click", selector: "[data-testid='button']" })
+webview_keyboard({ action: "type", selector: "input", text: "query" })
+```
+
+## E2E Testing (Future)
+
+E2E testing infrastructure is not yet set up. When added, Playwright will be the framework of choice:
+
+```bash
+# Install Playwright
+npm init playwright@latest
+
+# Run tests
+npx playwright test
+
+# Interactive UI mode
+npx playwright test --ui
+
+# Debug specific test
+npx playwright test --debug tests/app.spec.js
+```
+
+**Best Practices:**
+- Use `data-testid` attributes for stable selectors
+- Set viewport to 600x800 to match the app window size
+- Use Playwright's auto-waiting instead of arbitrary timeouts
+
 ## Context
 
 Always use Context7 MCP when I need library/API documentation, code generation, 
 setup or configuration steps without me having to explicitly ask.
 
 - Context7 mcp libraries
+  - alpinejs/alpine
   - crabnebula-dev/devtools
   - fastlane/docs
+  - hunvreus/basecoat
+  - microsoft/playwright
   - rohanadwankar/oxdraw
   - taskfile_dev
-  - websites/basecoatui_com
+  - websites/deno
   - websites/developer_android
   - websites/v2_tauri_app
 
