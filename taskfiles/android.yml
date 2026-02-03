@@ -38,7 +38,7 @@ tasks:
         done
       - |
         echo "Installing Android NDK..."
-        sdkmanager --install "ndk;28.2.13676358"
+        yes | sdkmanager --install "ndk;28.2.13676358"
       - |
         echo "Adding Android Rust targets..."
         rustup target add {{.ANDROID_ARM64_TARGET}} {{.ANDROID_ARMV7_TARGET}} {{.ANDROID_X86_TARGET}} {{.ANDROID_X64_TARGET}}
