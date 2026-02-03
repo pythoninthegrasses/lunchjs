@@ -34,6 +34,7 @@ jobs:
       RUBYOPT: "-W0"
       ANDROID_HOME: /opt/homebrew/share/android-commandlinetools
       ANDROID_NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
+      NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
