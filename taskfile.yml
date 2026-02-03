@@ -81,6 +81,42 @@ tasks:
       - task: ios:dev
 
   test:
-    desc: "Run Rust tests"
+    desc: "Run all tests (Rust + frontend unit)"
     cmds:
       - task: tauri:test
+      - task: test:unit
+
+  test:rust:
+    desc: "Run Rust tests only"
+    cmds:
+      - task: tauri:test
+
+  test:unit:
+    desc: "Run frontend unit tests (Vitest)"
+    dir: src-tauri/dist
+    cmds:
+      - npm test
+
+  test:unit:watch:
+    desc: "Run frontend unit tests in watch mode"
+    dir: src-tauri/dist
+    cmds:
+      - npm run test:watch
+
+  test:unit:coverage:
+    desc: "Run frontend unit tests with coverage"
+    dir: src-tauri/dist
+    cmds:
+      - npm run test:coverage
+
+  test:e2e:
+    desc: "Run Playwright E2E tests"
+    dir: src-tauri/dist
+    cmds:
+      - npm run test:e2e
+
+  test:e2e:ui:
+    desc: "Run Playwright E2E tests with UI"
+    dir: src-tauri/dist
+    cmds:
+      - npm run test:e2e:ui

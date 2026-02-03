@@ -78,6 +78,11 @@ lib-cov
 coverage
 *.lcov
 
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
+
 # nyc test coverage
 .nyc_output
 
@@ -94,7 +99,6 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -256,3 +260,6 @@ build-iPhoneSimulator/
 !**/.gitkeep
 !src-tauri/apple/**
 !src-tauri/dist/**
+
+# Has to come last to cover src-tauri/dist
+**/node_modules/
