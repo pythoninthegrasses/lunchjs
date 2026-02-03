@@ -27,7 +27,11 @@ tasks:
 
   setup:
     desc: "Install Android development dependencies"
-    deps: [setup:jdk, setup:sdk, setup:ndk, setup:rust-targets]
+    deps:
+      - setup:jdk
+      - setup:sdk
+      - setup:ndk
+      - setup:rust-targets
     cmds:
       - |
         echo "Android setup complete!"
