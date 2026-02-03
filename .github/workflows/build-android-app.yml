@@ -32,6 +32,7 @@ jobs:
     env:
       BUNDLE_FROZEN: "true"
       RUBYOPT: "-W0"
+      JAVA_HOME: /opt/homebrew/opt/openjdk@21
       ANDROID_HOME: /opt/homebrew/share/android-commandlinetools
       ANDROID_NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
       NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
@@ -98,7 +99,9 @@ jobs:
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
       - name: Build and upload to Google Play
-        run: task android:testflight
+        run: |
+          export PATH="$JAVA_HOME/bin:$PATH"
+          task android:testflight
         env:
           FASTLANE_OPT_OUT_USAGE: 1
           SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
