@@ -4,12 +4,13 @@ title: Fix Android APK missing custom icon
 status: To Do
 assignee: []
 created_date: '2026-01-06 23:48'
-updated_date: '2026-01-06 23:49'
+updated_date: '2026-02-03 00:01'
 labels:
   - android
   - bug
 dependencies: []
 priority: medium
+ordinal: 2000
 ---
 
 ## Description
