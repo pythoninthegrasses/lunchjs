@@ -24,10 +24,13 @@ tasks:
 
   setup:
     desc: "Install Android development dependencies"
+    env:
+      JAVA_HOME: /opt/homebrew/opt/openjdk@24
+      PATH: /opt/homebrew/opt/openjdk@24/bin:{{.PATH}}
     cmds:
       - |
-        echo "Installing Android SDK and NDK..."
-        for pkg in android-commandlinetools; do
+        echo "Installing JDK and Android SDK..."
+        for pkg in openjdk@24 android-commandlinetools; do
           brew list "$pkg" &>/dev/null || brew install "$pkg"
         done
       - |
@@ -39,6 +42,8 @@ tasks:
       - |
         echo "Android setup complete!"
         echo "Add these to your shell profile:"
+        echo '  export JAVA_HOME="/opt/homebrew/opt/openjdk@24"'
+        echo '  export PATH="$JAVA_HOME/bin:$PATH"'
         echo '  export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"'
         echo '  export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"'
         echo '  export NDK_HOME="$ANDROID_NDK_HOME"'
