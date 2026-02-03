@@ -851,3 +851,26 @@ npx tauri ios build --export-method app-store-connect
 | **Total** | **Medium** |
 
 The Rust code is minimal because it only handles database operations. Alpine.js handles all UI state and reactivity client-side.
+
+---
+
+## CI/CD Configuration
+
+### Self-Hosted Runner DNS (MinIO)
+
+The iOS CI/CD pipeline uses Fastlane Match with MinIO (S3-compatible) storage for code signing certificates. The self-hosted runner `mini` requires a static hosts entry to ensure reliable DNS resolution for the MinIO API endpoint.
+
+**Problem**: Corporate split DNS can intermittently fail, causing macOS to fall back to public DNS which returns the wrong IP address for internal services.
+
+**Solution**: Add static hosts entry on the runner:
+
+```bash
+# On the self-hosted runner (mini)
+echo '10.5.162.10 api.minio.nwcrane.com' | sudo tee -a /etc/hosts
+```
+
+**Environment Variables** (set in GitHub Actions secrets):
+- `AWS_ACCESS_KEY_ID` - MinIO access key
+- `AWS_SECRET_ACCESS_KEY` - MinIO secret key
+- `AWS_ENDPOINT_URL` - MinIO API endpoint (https://api.minio.nwcrane.com)
+- `MATCH_PASSWORD` - Fastlane Match encryption password

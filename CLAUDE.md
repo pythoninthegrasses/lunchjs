@@ -240,6 +240,28 @@ rm -rf src-tauri/target/*-linux-android*
 adb -s emulator-5554 uninstall com.lunch.app
 ```
 
+## CI/CD Self-Hosted Runner (mini)
+
+### DNS Resolution for MinIO
+
+The self-hosted runner `mini` uses corporate split DNS. If internal DNS servers (10.5.160.2/3) are temporarily unreachable, macOS falls back to public DNS (1.1.1.1/1.0.0.1) which returns the public IP for `api.minio.nwcrane.com` instead of the internal IP.
+
+**Symptom**: iOS build fails with:
+```
+Failed to open TCP connection to api.minio.nwcrane.com:443 (user specified timeout for 67.200.233.199:443)
+```
+
+**Fix**: Add static hosts entry on `mini` to bypass DNS:
+```bash
+ssh mini "echo '10.5.162.10 api.minio.nwcrane.com' | sudo tee -a /etc/hosts"
+```
+
+**Verification**:
+```bash
+ssh mini "grep minio /etc/hosts"
+# Should show: 10.5.162.10 api.minio.nwcrane.com
+```
+
 ## Context
 
 Always use Context7 MCP when I need library/API documentation, code generation, 

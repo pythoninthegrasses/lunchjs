@@ -1,11 +1,11 @@
 ---
 id: task-030
 title: Create Android CI/CD workflow mirroring iOS build workflow
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-02-02 23:31'
-updated_date: '2026-02-03 00:06'
+updated_date: '2026-02-03 17:08'
 labels:
   - ci
   - android
@@ -63,27 +63,25 @@ Key differences from iOS:
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-**Build Failure (Run #21610962763)**
+Created `.github/workflows/build-android-app.yml` - **Android build now works**.
 
-Error:
-```
-Android NDK not found. Make sure the NDK is installed and the NDK_HOME environment variable is set.
-```
+**Build Failures Fixed:**
 
-**Root Cause:**
-Tauri CLI expects `NDK_HOME` environment variable, but the workflow only sets `ANDROID_NDK_HOME`. The Fastfile also sets `ANDROID_NDK_HOME` but Tauri doesn't read that variable.
+1. **NDK_HOME missing** (Run #21610962763): Tauri CLI requires `NDK_HOME`, not just `ANDROID_NDK_HOME`
 
-**Proposed Fix:**
-Add `NDK_HOME` to the workflow environment variables alongside `ANDROID_NDK_HOME`:
+2. **Java 8 instead of 11+** (Run #21639247064): Gradle requires JDK 11+. Fixed by adding `JAVA_HOME: /opt/homebrew/opt/openjdk@21` and prepending to PATH.
 
-```yaml
-env:
-  ANDROID_HOME: /opt/homebrew/share/android-commandlinetools
-  ANDROID_NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
-  NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358  # Required by Tauri CLI
-```
+3. **Google Play upload fails** (Run #21639691801): Build succeeded (167s) but upload fails with "Precondition check failed". This is expected - **first AAB must be manually uploaded to Google Play Console** before automated uploads work.
 
-**Reference:**
-- GitHub Actions run: https://github.com/pythoninthegrass/lunchjs/actions/runs/21610962763/job/62279365776
-- Fastfile line 460: `sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")`
+**Next Step:** Manually upload first AAB per `docs/android.md` instructions.
+
+**Final Configuration:**
+- Self-hosted runner with JAVA_HOME, ANDROID_HOME, ANDROID_NDK_HOME, NDK_HOME
+- Keystore signing from secrets (ANDROID_KEY_PASSWORD, ANDROID_KEY_BASE64)
+- Google Play upload via `SUPPLY_JSON_KEY_DATA` secret
+
+**Required GitHub Secrets:**
+- ANDROID_KEY_PASSWORD
+- ANDROID_KEY_BASE64
+- GOOGLE_PLAY_JSON_KEY
 <!-- SECTION:NOTES:END -->
