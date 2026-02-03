@@ -32,6 +32,17 @@ fn delete_restaurant(name: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn update_restaurant(original_name: String, new_name: String, new_category: String) -> Result<(), String> {
+    get_db().update(&original_name, &new_name, &new_category).map_err(|e| {
+        if e.to_string().contains("already exists") {
+            format!("Restaurant '{}' already exists", new_name)
+        } else {
+            e.to_string()
+        }
+    })
+}
+
+#[tauri::command]
 fn roll_lunch(category: String) -> Result<Restaurant, String> {
     get_db().roll(&category).map_err(|e| {
         if e.to_string().contains("no rows") {
@@ -70,6 +81,7 @@ pub fn run() {
             list_restaurants,
             add_restaurant,
             delete_restaurant,
+            update_restaurant,
             roll_lunch,
         ])
         .run(tauri::generate_context!())

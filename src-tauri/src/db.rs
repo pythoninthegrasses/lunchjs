@@ -152,6 +152,38 @@ impl Database {
         Ok(())
     }
 
+    pub fn update(&self, original_name: &str, new_name: &str, new_category: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+
+        // Check for name conflict if renaming
+        if original_name != new_name {
+            let exists: bool = conn.query_row(
+                "SELECT EXISTS(SELECT 1 FROM lunch_list WHERE restaurants = ?)",
+                [new_name],
+                |row| row.get(0),
+            )?;
+            if exists {
+                return Err(rusqlite::Error::SqliteFailure(
+                    rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_CONSTRAINT),
+                    Some(format!("Restaurant '{}' already exists", new_name)),
+                ));
+            }
+        }
+
+        conn.execute(
+            "UPDATE lunch_list SET restaurants = ?, option = ? WHERE restaurants = ?",
+            [new_name, new_category, original_name],
+        )?;
+
+        // Update recent_lunch if name changed
+        conn.execute(
+            "UPDATE recent_lunch SET restaurants = ? WHERE restaurants = ?",
+            [new_name, original_name],
+        )?;
+
+        Ok(())
+    }
+
     pub fn roll(&self, category: &str) -> Result<Restaurant> {
         let restaurants = self.list_by_category(category)?;
         if restaurants.is_empty() {
@@ -283,5 +315,76 @@ mod tests {
             final_restaurants.iter().any(|r| r.name == "Custom Restaurant"),
             "Custom restaurant should be preserved"
         );
+    }
+
+    #[test]
+    fn test_update_restaurant_same_name() {
+        let db = Database::in_memory().unwrap();
+        db.add("Test Restaurant", "cheap").unwrap();
+
+        // Update category only (same name)
+        db.update("Test Restaurant", "Test Restaurant", "normal").unwrap();
+
+        let restaurants = db.list_all().unwrap();
+        assert_eq!(restaurants.len(), 1);
+        assert_eq!(restaurants[0].name, "Test Restaurant");
+        assert_eq!(restaurants[0].category, "normal");
+    }
+
+    #[test]
+    fn test_update_restaurant_new_name() {
+        let db = Database::in_memory().unwrap();
+        db.add("Old Name", "cheap").unwrap();
+
+        // Update name and category
+        db.update("Old Name", "New Name", "normal").unwrap();
+
+        let restaurants = db.list_all().unwrap();
+        assert_eq!(restaurants.len(), 1);
+        assert_eq!(restaurants[0].name, "New Name");
+        assert_eq!(restaurants[0].category, "normal");
+
+        // Old name should not exist
+        assert!(!restaurants.iter().any(|r| r.name == "Old Name"));
+    }
+
+    #[test]
+    fn test_update_restaurant_conflict() {
+        let db = Database::in_memory().unwrap();
+        db.add("Restaurant A", "cheap").unwrap();
+        db.add("Restaurant B", "normal").unwrap();
+
+        // Try to rename A to B (should fail - duplicate name)
+        let result = db.update("Restaurant A", "Restaurant B", "cheap");
+        assert!(result.is_err());
+
+        // Verify original data is unchanged
+        let restaurants = db.list_all().unwrap();
+        assert_eq!(restaurants.len(), 2);
+        assert!(restaurants.iter().any(|r| r.name == "Restaurant A" && r.category == "cheap"));
+        assert!(restaurants.iter().any(|r| r.name == "Restaurant B" && r.category == "normal"));
+    }
+
+    #[test]
+    fn test_update_restaurant_updates_recent() {
+        let db = Database::in_memory().unwrap();
+        db.add("Original", "cheap").unwrap();
+
+        // Roll to add to recent_lunch
+        db.roll("cheap").unwrap();
+
+        // Update name
+        db.update("Original", "Renamed", "cheap").unwrap();
+
+        // Verify recent_lunch was updated
+        let conn = db.conn.lock().unwrap();
+        let recent_name: String = conn
+            .query_row(
+                "SELECT restaurants FROM recent_lunch LIMIT 1",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(recent_name, "Renamed");
     }
 }

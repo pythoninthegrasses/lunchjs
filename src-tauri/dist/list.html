@@ -26,11 +26,48 @@
                 x-text="r.category.toLowerCase() === 'cheap' ? '$' : '$$'"
                 :title="r.category"
               ></span>
+              <button class="edit-btn" @click="openEditModal(r)">
+                <i class="fas fa-pencil"></i>
+              </button>
               <button class="delete-btn" @click="deleteRestaurant(r.name)">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
           </template>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal-overlay" x-show="editModalOpen" @click.self="closeEditModal()"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+          <div class="modal-dialog" x-show="editModalOpen" @click.stop
+               x-transition:enter="transition ease-out duration-200"
+               x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-150"
+               x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+            <button class="modal-close" @click="closeEditModal()"><i class="fas fa-times"></i></button>
+            <h2 class="text-xl font-bold text-center mb-4">Edit Restaurant</h2>
+            <form @submit.prevent="submitEdit()" class="modal-form">
+              <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" x-model="editName" class="form-input modal-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <div class="radio-group">
+                  <label class="radio-label"><input type="radio" x-model="editCategory" value="cheap" /> Cheap</label>
+                  <label class="radio-label"><input type="radio" x-model="editCategory" value="normal" /> Normal</label>
+                </div>
+              </div>
+              <div class="modal-error" x-show="editError" x-text="editError"></div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" @click="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn" :disabled="editLoading">Save</button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <p x-show="restaurants.length === 0 && !loading" class="text-center text-muted">
@@ -65,6 +102,12 @@
         return {
           restaurants: [],
           loading: true,
+          editModalOpen: false,
+          editingRestaurant: null,
+          editName: '',
+          editCategory: '',
+          editError: '',
+          editLoading: false,
 
           async loadRestaurants() {
             this.loading = true;
@@ -83,6 +126,43 @@
             } catch (e) {
               console.error('Delete failed:', e);
             }
+          },
+
+          openEditModal(restaurant) {
+            this.editingRestaurant = restaurant;
+            this.editName = restaurant.name;
+            this.editCategory = restaurant.category.toLowerCase();
+            this.editError = '';
+            this.editModalOpen = true;
+          },
+
+          closeEditModal() {
+            this.editModalOpen = false;
+            this.editingRestaurant = null;
+            this.editName = '';
+            this.editCategory = '';
+            this.editError = '';
+          },
+
+          async submitEdit() {
+            if (!this.editingRestaurant) return;
+
+            this.editLoading = true;
+            this.editError = '';
+
+            try {
+              await window.__TAURI__.core.invoke('update_restaurant', {
+                originalName: this.editingRestaurant.name,
+                newName: this.editName.trim(),
+                newCategory: this.editCategory,
+              });
+              this.closeEditModal();
+              await this.loadRestaurants();
+            } catch (e) {
+              this.editError = e;
+            }
+
+            this.editLoading = false;
           },
         };
       }

@@ -183,6 +183,160 @@ button.delete-btn:active {
   box-shadow: none !important;
 }
 
+/* Edit button - foreground color, yellow on hover */
+button.edit-btn {
+  color: oklch(var(--foreground)) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.25rem 0.5rem;
+  min-width: auto;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+button.edit-btn:hover,
+button.edit-btn:focus,
+button.edit-btn:active {
+  color: #eab308 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal-dialog {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 20rem;
+  position: relative;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .modal-dialog {
+  background-color: #1a1a1a;
+  border-color: #333333;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  color: #737373;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  min-width: auto;
+  transition: color 0.2s;
+}
+
+.dark .modal-close {
+  color: #a3a3a3;
+}
+
+.modal-close:hover {
+  color: #171717;
+}
+
+.dark .modal-close:hover {
+  color: #fafafa;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #171717;
+}
+
+.dark .form-label {
+  color: #fafafa;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  color: #171717;
+}
+
+.dark .modal-input {
+  border-color: #333333 !important;
+  background-color: #1a1a1a;
+  color: #fafafa;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #171717 !important;
+}
+
+.dark .modal-input:focus {
+  border-color: #fafafa !important;
+}
+
+.modal-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-secondary {
+  background: transparent !important;
+  border: 1px solid #e5e5e5 !important;
+  color: #171717 !important;
+}
+
+.dark .btn-secondary {
+  border-color: #333333 !important;
+  color: #fafafa !important;
+}
+
+.btn-secondary:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #262626 !important;
+}
+
 /* Form styles - underline input */
 .add-form input.form-input,
 input.form-input[name="name"] {

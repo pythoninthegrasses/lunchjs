@@ -1,10 +1,11 @@
 ---
 id: task-033
 title: Add edit functionality to restaurant list view
-status: In Progress
-assignee: []
+status: Done
+assignee:
+  - '@claude'
 created_date: '2026-02-03 21:05'
-updated_date: '2026-02-03 21:06'
+updated_date: '2026-02-03 21:50'
 labels:
   - feature
   - frontend
@@ -30,17 +31,17 @@ Add an edit button (pencil icon) to each restaurant in the list view that opens 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Edit button (pencil icon) appears next to delete button on each restaurant card
-- [ ] #2 Edit button turns yellow (#eab308) on hover/tap with 0.2s transition
-- [ ] #3 Clicking edit opens a centered modal overlay
-- [ ] #4 Modal contains: name text input, category radio buttons (cheap/normal), Cancel and Save buttons
-- [ ] #5 Modal closes when clicking X button
-- [ ] #6 Modal closes when clicking outside the dialog
-- [ ] #7 Saving updates the restaurant name and/or category via Tauri IPC
-- [ ] #8 Error message displays in modal if duplicate name attempted
-- [ ] #9 List refreshes automatically after successful edit
-- [ ] #10 Works in both light and dark themes
-- [ ] #11 Rust unit tests pass for update method
+- [x] #1 Edit button (pencil icon) appears next to delete button on each restaurant card
+- [x] #2 Edit button turns yellow (#eab308) on hover/tap with 0.2s transition
+- [x] #3 Clicking edit opens a centered modal overlay
+- [x] #4 Modal contains: name text input, category radio buttons (cheap/normal), Cancel and Save buttons
+- [x] #5 Modal closes when clicking X button
+- [x] #6 Modal closes when clicking outside the dialog
+- [x] #7 Saving updates the restaurant name and/or category via Tauri IPC
+- [x] #8 Error message displays in modal if duplicate name attempted
+- [x] #9 List refreshes automatically after successful edit
+- [x] #10 Works in both light and dark themes
+- [x] #11 Rust unit tests pass for update method
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -158,3 +159,39 @@ Same pattern as delete-btn but yellow (#eab308) on hover instead of red.
 3. Test all scenarios manually
 4. Mobile: `task ios` and `task android:dev`
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+## Summary
+
+Added full CRUD update functionality to the restaurant list view with edit button and modal dialog.
+
+## Changes
+
+**Backend (Rust)**
+- `src-tauri/src/db.rs`: Added `update()` method with duplicate name detection and recent_lunch table sync
+- `src-tauri/src/lib.rs`: Added `update_restaurant` Tauri command, registered in invoke_handler
+- 4 new unit tests for update functionality (same name, new name, conflict detection, recent table sync)
+
+**Frontend**
+- `src-tauri/dist/list.html`: Added edit button (pencil icon), modal overlay with form, Alpine.js state/methods
+- `src-tauri/dist/app.css`: Added edit button styles (yellow hover), modal styles (overlay, dialog, form, error)
+
+**Testing**
+- `src-tauri/dist/tests/global-setup.js`: Updated Tauri mock with `update_restaurant` command + conflict detection
+- `src-tauri/dist/tests/list.spec.js`: Added 9 E2E tests for edit functionality
+
+## Test Results
+- 21 Rust tests passing (4 new update tests)
+- 10 frontend unit tests passing
+- 58 E2E tests passing (9 new edit tests)
+
+## Verification
+- Edit button appears with pencil icon, turns yellow on hover
+- Modal opens/closes correctly (X button, click outside, Cancel)
+- Name and category updates work via Tauri IPC
+- Duplicate name shows error in modal
+- List refreshes after successful edit
+- Works in both light and dark themes
+<!-- SECTION:NOTES:END -->
