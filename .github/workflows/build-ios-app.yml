@@ -42,13 +42,14 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0.1'
-          bundler-cache: true
+
+      - name: Install Ruby dependencies
+        run: bundle install
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
 
       - name: Install npm dependencies
         run: npm ci
@@ -57,13 +58,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri -> target
-          cache-targets: true
-          cache-on-failure: true
 
       - name: Ensure Tauri iOS dependencies
         run: |
