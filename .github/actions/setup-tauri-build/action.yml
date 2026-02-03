@@ -1,0 +1,99 @@
+name: Setup Build Environment
+description: 'Sets up Ruby, Node.js, Rust, and Task for Tauri iOS/Android builds'
+
+inputs:
+  platform:
+    description: 'Target platform: ios or android'
+    required: true
+  ruby-version:
+    description: 'Ruby version to install (overrides RUBY_VERSION env var)'
+    required: false
+    default: ''
+  node-version:
+    description: 'Node.js version to install (overrides NODE_VERSION env var)'
+    required: false
+    default: ''
+
+outputs:
+  cache-hit:
+    description: 'Whether the build artifact cache was hit'
+    value: ${{ steps.cache-build.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby-version || env.RUBY_VERSION || '4.0.1' }}
+
+    - name: Install Ruby dependencies
+      shell: bash
+      run: bundle install
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version || env.NODE_VERSION || '24' }}
+
+    - name: Install npm dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Setup Rust (iOS)
+      if: inputs.platform == 'ios'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+
+    - name: Setup Rust (Android)
+      if: inputs.platform == 'android'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+    - name: Cache Task checksums
+      uses: actions/cache@v5
+      with:
+        path: .task
+        key: ${{ runner.os }}-task-v1
+        restore-keys: |
+          ${{ runner.os }}-task-
+
+    - name: Cache iOS build artifacts
+      if: inputs.platform == 'ios'
+      id: cache-build-ios
+      uses: actions/cache@v5
+      with:
+        path: src-tauri/gen/apple/build
+        key: ${{ runner.os }}-ios-build-${{ hashFiles('src-tauri/src/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock', 'src-tauri/tauri.conf.json', 'src-tauri/dist/**/*', 'src-tauri/icons/icon.png', 'fastlane/Fastfile', 'fastlane/Appfile') }}
+        restore-keys: |
+          ${{ runner.os }}-ios-build-
+
+    - name: Cache Android build artifacts
+      if: inputs.platform == 'android'
+      id: cache-build-android
+      uses: actions/cache@v5
+      with:
+        path: src-tauri/gen/android/app/build
+        key: ${{ runner.os }}-android-build-${{ hashFiles('src-tauri/src/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock', 'src-tauri/tauri.conf.json', 'src-tauri/dist/**/*', 'src-tauri/icons/icon.png', 'fastlane/Fastfile', 'fastlane/Appfile') }}
+        restore-keys: |
+          ${{ runner.os }}-android-build-
+
+    - name: Set cache-hit output
+      id: cache-build
+      shell: bash
+      run: |
+        if [[ "${{ inputs.platform }}" == "ios" ]]; then
+          echo "cache-hit=${{ steps.cache-build-ios.outputs.cache-hit }}" >> $GITHUB_OUTPUT
+        else
+          echo "cache-hit=${{ steps.cache-build-android.outputs.cache-hit }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Install Task
+      uses: go-task/setup-task@v1

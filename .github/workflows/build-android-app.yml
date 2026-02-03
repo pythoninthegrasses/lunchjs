@@ -20,6 +20,7 @@ on:
       - 'Gemfile*'
       - 'package*.json'
       - '.github/workflows/build-android-app.yml'
+      - '.github/actions/setup-tauri-build/**'
 
 # Cancel in-progress builds when a newer one is triggered
 concurrency:
@@ -37,50 +38,10 @@ jobs:
       ANDROID_NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
       NDK_HOME: /opt/homebrew/share/android-commandlinetools/ndk/28.2.13676358
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - name: Setup Tauri build environment
+        uses: ./.github/actions/setup-tauri-build
         with:
-          fetch-depth: 1
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '4.0.1'
-
-      - name: Install Ruby dependencies
-        run: bundle install
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
-
-      - name: Cache Task checksums
-        uses: actions/cache@v5
-        with:
-          path: .task
-          key: ${{ runner.os }}-task-v1
-          restore-keys: |
-            ${{ runner.os }}-task-
-
-      - name: Cache Android build artifacts
-        uses: actions/cache@v5
-        with:
-          path: src-tauri/gen/android/app/build
-          key: ${{ runner.os }}-android-build-${{ hashFiles('src-tauri/src/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock', 'src-tauri/tauri.conf.json', 'src-tauri/dist/**/*', 'src-tauri/icons/icon.png', 'fastlane/Fastfile', 'fastlane/Appfile') }}
-          restore-keys: |
-            ${{ runner.os }}-android-build-
-
-      - name: Install Task
-        uses: go-task/setup-task@v1
+          platform: android
 
       - name: Setup Android signing
         env:
@@ -93,10 +54,9 @@ jobs:
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
       - name: Build and upload to Google Play
-        run: |
-          export PATH="$JAVA_HOME/bin:$PATH"
-          task android:testflight
+        run: task android:testflight
         env:
+          PATH: ${{ env.JAVA_HOME }}/bin:${{ env.PATH }}
           FASTLANE_OPT_OUT_USAGE: 1
           SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
           GOOGLE_PLAY_TRACK: ${{ vars.GOOGLE_PLAY_TRACK || 'alpha' }}

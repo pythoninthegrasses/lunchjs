@@ -856,6 +856,55 @@ The Rust code is minimal because it only handles database operations. Alpine.js 
 
 ## CI/CD Configuration
 
+### Shared Build Environment (Composite Action)
+
+Both iOS and Android workflows use a shared composite action for environment setup:
+
+**Location**: `.github/actions/setup-tauri-build/action.yml`
+
+**Usage**:
+```yaml
+- name: Setup Tauri build environment
+  uses: ./.github/actions/setup-tauri-build
+  with:
+    platform: ios  # or 'android'
+```
+
+**What it does**:
+- Checks out repository
+- Sets up Ruby 4.0.1 and installs dependencies (Fastlane)
+- Sets up Node.js 24 and runs `npm ci`
+- Installs Rust with platform-specific targets
+- Caches Task checksums and platform build artifacts
+- Installs Task runner
+
+**Inputs**:
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `platform` | Yes | - | `ios` or `android` |
+| `ruby-version` | No | `4.0.1` | Ruby version |
+| `node-version` | No | `24` | Node.js version |
+
+**Outputs**:
+| Output | Description |
+|--------|-------------|
+| `cache-hit` | Whether build artifact cache was hit |
+
+### Blacksmith Runners
+
+The `release-please.yml` workflow uses [Blacksmith](https://blacksmith.sh) runners for faster CI execution:
+
+```yaml
+runs-on: blacksmith-4vcpu-ubuntu-2404
+```
+
+**Benefits**:
+- No queue wait time
+- 50% cost savings vs GitHub Actions
+- 4x faster cache operations
+
+**Note**: iOS and Android builds still use the self-hosted macOS runner (`mini`) because they require Xcode and the Android SDK.
+
 ### Self-Hosted Runner DNS (MinIO)
 
 The iOS CI/CD pipeline uses Fastlane Match with MinIO (S3-compatible) storage for code signing certificates. The self-hosted runner `mini` requires a static hosts entry to ensure reliable DNS resolution for the MinIO API endpoint.
