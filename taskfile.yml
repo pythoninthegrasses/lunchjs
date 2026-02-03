@@ -12,8 +12,8 @@ env:
   RUBYOPT: "-W0"
 
 includes:
-  npm:
-    taskfile: ./taskfiles/npm.yml
+  deno:
+    taskfile: ./taskfiles/deno.yml
   tauri:
     taskfile: ./taskfiles/tauri.yml
   ios:
@@ -68,7 +68,7 @@ tasks:
       - task: tauri:clean
       - task: ios:clean
       - task: android:clean
-      - task: npm:clean
+      - task: deno:clean
 
   certs:
     desc: "Sync code signing certificates"

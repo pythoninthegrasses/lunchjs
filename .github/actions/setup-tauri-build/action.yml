@@ -9,10 +9,10 @@ inputs:
     description: 'Ruby version to install (overrides RUBY_VERSION env var)'
     required: false
     default: ''
-  node-version:
-    description: 'Node.js version to install (overrides NODE_VERSION env var)'
+  deno-version:
+    description: 'Deno version to install'
     required: false
-    default: ''
+    default: 'v2.x'
 
 outputs:
   cache-hit:
@@ -36,14 +36,14 @@ runs:
       shell: bash
       run: bundle install
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v6
+    - name: Setup Deno
+      uses: denoland/setup-deno@v2
       with:
-        node-version: ${{ inputs.node-version || env.NODE_VERSION || '24' }}
+        deno-version: ${{ inputs.deno-version }}
 
-    - name: Install npm dependencies
+    - name: Install dependencies
       shell: bash
-      run: npm ci
+      run: deno install --node-modules-dir=auto
 
     - name: Setup Rust (iOS)
       if: inputs.platform == 'ios'

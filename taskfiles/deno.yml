@@ -1,0 +1,64 @@
+version: "3.0"
+
+set: ['e', 'u', 'pipefail']
+shopt: ['globstar']
+
+tasks:
+  install:
+    desc: "Install dependencies via Deno"
+    cmds:
+      - deno install --node-modules-dir=auto
+    sources:
+      - "{{.ROOT_DIR}}/package.json"
+    generates:
+      - "{{.ROOT_DIR}}/node_modules/**/*"
+    status:
+      - test -d "{{.ROOT_DIR}}/node_modules"
+    silent: true
+
+  clean:
+    desc: "Clean deno artifacts"
+    cmds:
+      - rm -rf {{.ROOT_DIR}}/node_modules
+      - rm -rf {{.ROOT_DIR}}/deno.lock
+    silent: true
+
+  outdated:
+    desc: "Check for outdated dependencies (uses npm)"
+    cmds:
+      - npm outdated || true
+    silent: true
+
+  audit:
+    desc: "Run security audit (uses npm)"
+    cmds:
+      - npm audit
+
+  audit-fix:
+    desc: "Fix security vulnerabilities (uses npm)"
+    cmds:
+      - npm audit fix
+
+  cache-clean:
+    desc: "Clean deno cache"
+    cmds:
+      - deno cache --reload
+    silent: true
+
+  list:
+    desc: "List installed packages"
+    cmds:
+      - deno info --json package.json | head -50
+    silent: true
+
+  check-deps:
+    desc: "Check if deno is installed"
+    cmds:
+      - |
+        echo "Checking deno dependencies..."
+        if ! command -v deno &> /dev/null; then
+          echo "deno not found. Install from https://deno.com"
+          exit 1
+        fi
+        echo "deno version: $(deno --version | head -1)"
+    silent: true

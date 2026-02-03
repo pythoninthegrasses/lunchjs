@@ -1,0 +1,33 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "build:css": "deno run -A npm:tailwindcss -i static/input.css -o static/styles.css --minify",
+    "watch:css": "deno run -A npm:tailwindcss -i static/input.css -o static/styles.css --watch",
+    "tauri": "deno run -A npm:@tauri-apps/cli",
+    "tauri:dev": "deno run -A npm:@tauri-apps/cli dev",
+    "tauri:build": "deno run -A npm:@tauri-apps/cli build"
+  },
+  "lint": {
+    "exclude": ["src-tauri/dist/js/"]
+  },
+  "fmt": {
+    "indentWidth": 2,
+    "useTabs": false,
+    "semiColons": true,
+    "singleQuote": true,
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+  },
+  "exclude": [
+    "node_modules",
+    "src-tauri",
+    ".task",
+    ".cache",
+    ".claude",
+    ".github",
+    ".serena",
+    "backlog",
+    "vendor",
+    "fastlane",
+    "docs"
+  ]
+}

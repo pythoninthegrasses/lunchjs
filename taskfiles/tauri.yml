@@ -81,11 +81,11 @@ tasks:
     cmds:
       - |
         echo "Building {{.APP_NAME}} v{{.APP_VERSION}}{{if .TARGET}} for {{.TARGET}}{{end}}..."
-        cd {{.TAURI_DIR}} && npx tauri build {{.TARGET_FLAG}}
+        cd {{.TAURI_DIR}} && deno task tauri build {{.TARGET_FLAG}}
 
   build:
     desc: "Build Tauri app for current architecture"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     vars:
       CURRENT_TARGET: '{{if eq ARCH "arm64"}}{{.MACOS_ARM64_TARGET}}{{else}}{{.MACOS_X64_TARGET}}{{end}}'
     cmds:
@@ -100,7 +100,7 @@ tasks:
 
   build:arm64:
     desc: "Build Tauri app for Apple Silicon (arm64)"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     cmds:
       - task: _build
         vars:
@@ -113,7 +113,7 @@ tasks:
 
   build:x64:
     desc: "Build Tauri app for Intel (x86_64)"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     cmds:
       - task: _build
         vars:
@@ -126,28 +126,28 @@ tasks:
 
   dev:
     desc: "Run Tauri in development mode (uses nightly + parallel frontend)"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     env:
       RUSTUP_TOOLCHAIN: nightly
       RUSTFLAGS: "-Z threads=16"
     cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri dev -- --features devtools
+      - cmd: cd {{.TAURI_DIR}} && deno task tauri dev -- --features devtools
         ignore_error: true
     interactive: true
 
   dev:stable:
     desc: "Run Tauri in development mode (stable toolchain)"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     cmds:
-      - cmd: cd {{.TAURI_DIR}} && npx tauri dev -- --features devtools
+      - cmd: cd {{.TAURI_DIR}} && deno task tauri dev -- --features devtools
         ignore_error: true
     interactive: true
 
   icons:
     desc: "Generate app icons from source icon"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     cmds:
-      - npx tauri icon {{.TAURI_DIR}}/icons/icon.png -o {{.TAURI_DIR}}/icons
+      - deno task tauri icon {{.TAURI_DIR}}/icons/icon.png -o {{.TAURI_DIR}}/icons
     sources:
       - "{{.TAURI_DIR}}/icons/icon.png"
     generates:
@@ -193,11 +193,11 @@ tasks:
           echo "cargo version: $(cargo --version)"
         fi
 
-        if ! command -v npx &> /dev/null; then
-          echo "npx not found. Install Node.js from https://nodejs.org"
+        if ! command -v deno &> /dev/null; then
+          echo "deno not found. Install from https://deno.com"
           missing=1
         else
-          echo "npx available"
+          echo "deno version: $(deno --version | head -1)"
         fi
 
         if [[ $missing -eq 0 ]]; then
@@ -210,7 +210,7 @@ tasks:
   doctor:
     desc: "Run Tauri doctor to check environment"
     cmds:
-      - cd {{.TAURI_DIR}} && npx tauri info
+      - cd {{.TAURI_DIR}} && deno task tauri info
 
   test:
     desc: "Run Rust tests"
