@@ -15,6 +15,12 @@ Cross-platform restaurant selector app built with Tauri + Alpine.js.
 
 Hats off to the OG Python version by [@zookinheimer](https://github.com/zookinheimer/lunch) 🎩
 
+## Demo
+
+<div align="center">
+  <img src="static/demo.avif" alt="Demo AVIF" />
+</div>
+
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the full migration plan from FastHTML to Alpine.js + Tauri.

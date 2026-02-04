@@ -156,6 +156,19 @@ Tables:
 - `docs/architecture.md` - Full migration plan from FastHTML with code examples
 - `lunch_list.csv` - Seed data for importing restaurants
 - `src-tauri/dist/js/app.js` - Shared theme toggle and navigation logic
+- `static/demo.avif` - Animated demo for README
+
+## Demo Video
+
+Convert screen recording (mp4) to AVIF for README using SVT-AV1 (fast, good quality):
+
+```bash
+ffmpeg -i input.mp4 -c:v libsvtav1 -vf scale=-1:720 -crf 30 static/demo.avif
+```
+
+- `libsvtav1` is 10-50x faster than `libaom-av1`
+- `-crf 30` balances quality/size (lower = better quality, larger file)
+- Scale to 720p height for reasonable file size
 
 ## Current Status
 
