@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.15.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.14.0...v0.15.0) (2026-02-04)
+
+
+### Features
+
+* add edit functionality to restaurant list view ([8c35c86](https://github.com/pythoninthegrasses/lunchjs/commit/8c35c863200573e2575e79b444eb961848ca436e))
+* add test suite workflow ([af2bbd5](https://github.com/pythoninthegrasses/lunchjs/commit/af2bbd5cfd346ec27e1629f7afb518cc0794b6cb))
+* add unit, integration, and E2E testing infrastructure ([a42bd1e](https://github.com/pythoninthegrasses/lunchjs/commit/a42bd1e83846a564a7e19207e2cd2e0a2bc2353a))
+* migrate from npm to Deno for frontend tooling ([c6120c3](https://github.com/pythoninthegrasses/lunchjs/commit/c6120c376b822ecd90402e9794f0ec223052d8b1))
+
+
+### Bug Fixes
+
+* add checkout step before local composite action ([ddfaabd](https://github.com/pythoninthegrasses/lunchjs/commit/ddfaabd79ed1344787e7ace56b92d50e418862fd))
+* detect Node.js arch for Tauri CLI native module ([4e6c67b](https://github.com/pythoninthegrasses/lunchjs/commit/4e6c67b6511e0472597abbb687d1697f09c468d4))
+* exclude test artifacts from src-tauri/dist in gitignore ([0088d93](https://github.com/pythoninthegrasses/lunchjs/commit/0088d9364cc07895a975fdb3f6a3f1c8b10b3b7c))
+* handle empty deno fmt/lint targets gracefully ([f49c0ed](https://github.com/pythoninthegrasses/lunchjs/commit/f49c0eda31ba710caee74a2ab378d700f6e4b7e5))
+* install Tauri CLI native module for platform ([450cfcb](https://github.com/pythoninthegrasses/lunchjs/commit/450cfcbe3f0edcf27a2a7d27b3efe2458b2af5dc))
+* install webkit browser for Playwright tests ([ffc7388](https://github.com/pythoninthegrasses/lunchjs/commit/ffc73880e6c343a9cf1ded9165a8e632f49bea4b))
+* replace :npm:install with :deno:install in taskfiles ([8f06a2a](https://github.com/pythoninthegrasses/lunchjs/commit/8f06a2a43508af8e444538cdd4fd5bfc00ae1d85))
+* run iOS and Android builds on studio runner ([cabcd39](https://github.com/pythoninthegrasses/lunchjs/commit/cabcd398200ab03938b4b0881f457fa629f37f2d))
+* update Tauri CLI syntax for --aab flag ([343ad22](https://github.com/pythoninthegrasses/lunchjs/commit/343ad2230032877cffbce9243be0e09fa7e8bd9c))
+* use studio label only for runner selection ([6e4cd3e](https://github.com/pythoninthegrasses/lunchjs/commit/6e4cd3e34f15107eedb9f1e09aea839f448a491f))
+
+
+### Performance Improvements
+
+* **ci:** optimize Android build with reduced targets and Rust cache ([d4e5c07](https://github.com/pythoninthegrasses/lunchjs/commit/d4e5c072b5982f9c575db9e693d6151040397482))
+
 ## [0.14.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.13.0...v0.14.0) (2026-02-03)
 
 
