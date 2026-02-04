@@ -85,10 +85,20 @@ jobs:
           deno-version: v2.x
 
       - name: Check Deno formatting
-        run: deno fmt --check
+        run: |
+          if deno fmt --check 2>&1 | grep -q "No target files found"; then
+            echo "No files to format (all excluded in deno.jsonc)"
+          else
+            deno fmt --check
+          fi
 
       - name: Run Deno lint
-        run: deno lint
+        run: |
+          if deno lint 2>&1 | grep -q "No target files found"; then
+            echo "No files to lint (all excluded in deno.jsonc)"
+          else
+            deno lint
+          fi
 
   # Vitest unit tests with coverage
   vitest-tests:
