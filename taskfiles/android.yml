@@ -114,7 +114,7 @@ tasks:
 
   init:
     desc: "Initialize Android project"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     cmds:
       - |
         echo "Adding Android Rust targets..."
@@ -172,7 +172,7 @@ tasks:
 
   dev:
     desc: "Run on Android emulator"
-    deps: [":npm:install", "init", "emulator:keyboard"]
+    deps: [":deno:install", "init", "emulator:keyboard"]
     env:
       ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: "0"
     cmds:
@@ -196,7 +196,7 @@ tasks:
 
   run:emulator:
     desc: "Build release APK and install on emulator (no hot-reload, for testing)"
-    deps: [":npm:install", "init", "emulator:keyboard"]
+    deps: [":deno:install", "init", "emulator:keyboard"]
     vars:
       APK_DIR: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release"
       RELEASE_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
@@ -240,7 +240,7 @@ tasks:
 
   dev:device:
     desc: "Run on physical Android device (dev mode with hot-reload)"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - defer: pkill -f "tauri android dev" 2>/dev/null || true
       - cmd: cd {{.TAURI_DIR}} && npx tauri android dev --host
@@ -250,7 +250,7 @@ tasks:
 
   run:device:
     desc: "Build release APK, sign with debug key, and install on physical Android device"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     vars:
       UNSIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
       SIGNED_APK: "{{.TAURI_DIR}}/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk"
@@ -267,21 +267,21 @@ tasks:
 
   build:
     desc: "Build for Android distribution (APK and AAB)"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build
     silent: true
 
   build:apk:
     desc: "Build APK only (for testing/sideloading)"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build --apk true --aab false
     silent: true
 
   build:aab:
     desc: "Build AAB only (for Google Play)"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri android build --apk false --aab true
     silent: true
@@ -299,7 +299,7 @@ tasks:
 
   internal:
     desc: "Build and upload to Google Play internal testing track"
-    deps: [":npm:install", "init", ":tauri:icons", ":bundle:install"]
+    deps: [":deno:install", "init", ":tauri:icons", ":bundle:install"]
     sources:
       - "{{.TAURI_DIR}}/src/**/*.rs"
       - "{{.TAURI_DIR}}/Cargo.toml"
@@ -318,7 +318,7 @@ tasks:
 
   testflight:
     desc: "Build and upload to Google Play beta track"
-    deps: [":npm:install", "init", ":tauri:icons", ":bundle:install"]
+    deps: [":deno:install", "init", ":tauri:icons", ":bundle:install"]
     sources:
       - "{{.TAURI_DIR}}/src/**/*.rs"
       - "{{.TAURI_DIR}}/Cargo.toml"

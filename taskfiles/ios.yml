@@ -13,7 +13,7 @@ vars:
 tasks:
   init:
     desc: "Initialize iOS project"
-    deps: [":npm:install"]
+    deps: [":deno:install"]
     cmds:
       - |
         echo "Adding iOS Rust targets..."
@@ -31,7 +31,7 @@ tasks:
 
   dev:
     desc: "Run on iOS simulator"
-    deps: [":npm:install", "init", "boot"]
+    deps: [":deno:install", "init", "boot"]
     cmds:
       - cmd: cd {{.TAURI_DIR}} && npx tauri ios dev "{{.IOS_SIM_DEVICE}}"
         ignore_error: true
@@ -39,7 +39,7 @@ tasks:
 
   run:device:
     desc: "Build release and install on physical iOS device"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     vars:
       DEVICE_ID:
         sh: xcrun devicectl list devices 2>/dev/null | grep -E "^\s+[0-9A-F-]+\s+" | head -1 | awk '{print $1}' || echo ""
@@ -60,13 +60,13 @@ tasks:
 
   build:
     desc: "Build for iOS distribution (requires device/provisioning)"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri ios build
 
   build:sim:
     desc: "Build for iOS Simulator (no provisioning required)"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - |
         echo "Building for iOS Simulator..."
@@ -80,7 +80,7 @@ tasks:
 
   build:appstore:
     desc: "Build for App Store Connect"
-    deps: [":npm:install", "init"]
+    deps: [":deno:install", "init"]
     cmds:
       - cd {{.TAURI_DIR}} && npx tauri ios build --export-method app-store-connect
 
@@ -92,7 +92,7 @@ tasks:
 
   testflight:
     desc: "Build and upload to TestFlight"
-    deps: [":npm:install", "init", ":tauri:icons", ":bundle:install"]
+    deps: [":deno:install", "init", ":tauri:icons", ":bundle:install"]
     sources:
       - "{{.TAURI_DIR}}/src/**/*.rs"
       - "{{.TAURI_DIR}}/Cargo.toml"
