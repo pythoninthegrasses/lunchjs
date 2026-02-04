@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-02-04 21:33'
-updated_date: '2026-02-04 21:35'
+updated_date: '2026-02-04 21:39'
 labels:
   - desktop
   - macos
@@ -23,9 +23,9 @@ Set the desktop titlebar to match the app's theme color on macOS using Tauri's o
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 macOS titlebar uses overlay style with hidden title
-- [ ] #2 Traffic light buttons match current theme (dark/light)
-- [ ] #3 Theme changes update titlebar in real-time
-- [ ] #4 System theme preference correctly applies to titlebar
+- [x] #2 Traffic light buttons match current theme (dark/light)
+- [x] #3 Theme changes update titlebar in real-time
+- [x] #4 System theme preference correctly applies to titlebar
 - [ ] #5 No regression on iOS or Android builds
 <!-- AC:END -->
 
@@ -38,3 +38,18 @@ Set the desktop titlebar to match the app's theme color on macOS using Tauri's o
 4. Test on macOS with task dev
 5. Verify iOS builds still work
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Implemented macOS titlebar theme matching using Tauri's overlay titlebar style and window.setTheme() JavaScript API.
+
+Changes:
+- tauri.conf.json: Added titleBarStyle: Overlay and hiddenTitle: true
+- capabilities/default.json: Added core:window:allow-start-dragging permission
+- js/app.js: Added syncTauriTheme() function called on theme changes
+- app.css: Added drag region styles and titlebar safe area padding
+- All HTML pages: Added data-tauri-drag-region div for window dragging
+
+Tested on macOS - traffic light buttons update with theme changes.
+<!-- SECTION:NOTES:END -->

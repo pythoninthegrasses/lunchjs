@@ -1,11 +1,11 @@
 ---
 id: task-035
 title: Optimize Android CI build time
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-02-04 20:47'
-updated_date: '2026-02-04 20:53'
+updated_date: '2026-02-04 22:31'
 labels:
   - ci
   - android
@@ -30,7 +30,7 @@ Android CI builds take ~8 minutes compared to iOS's ~2 minutes. Two optimization
 - [x] #1 Android Rust target directories are included in GHA cache
 - [x] #2 Android builds target only aarch64-linux-android and armv7-linux-androideabi
 - [x] #3 i686-linux-android and x86_64-linux-android targets are removed from CI builds
-- [ ] #4 Android CI build time is reduced (target: under 5 minutes)
+- [x] #4 Android CI build time is reduced (target: under 5 minutes)
 <!-- AC:END -->
 
 ## Implementation Plan
