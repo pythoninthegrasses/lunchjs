@@ -15,6 +15,29 @@ html, body {
   padding-top: env(safe-area-inset-top, 0);
 }
 
+/* macOS titlebar drag region */
+[data-tauri-drag-region] {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.titlebar-drag-region {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 50;
+  background: transparent;
+}
+
+/* macOS titlebar overlay - add padding for traffic lights */
+@media (min-width: 768px) {
+  .app-container {
+    padding-top: 28px;
+  }
+}
+
 /* iOS WKWebView viewport fix - svh is more accurate for iOS */
 @supports (min-height: 100svh) {
   .app-container {
@@ -120,6 +143,13 @@ html, body {
   color: oklch(var(--foreground));
   cursor: pointer;
   font-size: 1.25rem;
+}
+
+/* Desktop: position below titlebar overlay */
+@media (min-width: 768px) {
+  .theme-toggle {
+    top: calc(28px + 0.5rem) !important;
+  }
 }
 
 @media (max-width: 768px) {

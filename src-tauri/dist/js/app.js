@@ -1,3 +1,14 @@
+// Sync theme to Tauri window (macOS titlebar)
+async function syncTauriTheme(isDark) {
+  if (!window.__TAURI__?.window) return;
+  try {
+    const win = window.__TAURI__.window.getCurrentWindow();
+    await win.setTheme(isDark ? 'dark' : 'light');
+  } catch (e) {
+    console.warn('Failed to set Tauri window theme:', e);
+  }
+}
+
 // Theme management
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize theme
@@ -7,11 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isDark = useSystem ? prefersDark : stored === 'dark';
   if (isDark) document.documentElement.classList.add('dark');
+  syncTauriTheme(isDark);
 
   // Listen for system theme changes
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
     if (localStorage.getItem('useSystemTheme') !== 'false') {
       document.documentElement.classList.toggle('dark', e.matches);
+      syncTauriTheme(e.matches);
     }
   });
 
@@ -34,6 +47,7 @@ window.toggleTheme = function () {
   document.documentElement.classList.toggle('dark', isDark);
   localStorage.setItem('themeMode', isDark ? 'dark' : 'light');
   localStorage.setItem('useSystemTheme', 'false');
+  syncTauriTheme(isDark);
 };
 
 // Global system theme function
@@ -42,5 +56,6 @@ window.setSystemTheme = function (useSystem) {
   if (useSystem) {
     const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.classList.toggle('dark', prefersDark);
+    syncTauriTheme(prefersDark);
   }
 };
