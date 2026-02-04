@@ -40,6 +40,21 @@ runs:
       shell: bash
       run: deno install --node-modules-dir=auto
 
+    - name: Install Tauri CLI native module
+      shell: bash
+      run: |
+        # Deno doesn't install optional dependencies (platform-specific native modules)
+        # Install the Tauri CLI native module explicitly for the current platform
+        ARCH=$(uname -m)
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        if [[ "$ARCH" == "arm64" || "$ARCH" == "aarch64" ]]; then
+          TAURI_NATIVE_PKG="@tauri-apps/cli-${OS}-arm64"
+        else
+          TAURI_NATIVE_PKG="@tauri-apps/cli-${OS}-x64"
+        fi
+        echo "Installing $TAURI_NATIVE_PKG..."
+        npm install "$TAURI_NATIVE_PKG" --no-save
+
     - name: Setup Rust (iOS)
       if: inputs.platform == 'ios'
       uses: dtolnay/rust-toolchain@stable
