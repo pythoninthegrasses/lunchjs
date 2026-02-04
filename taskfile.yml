@@ -120,3 +120,15 @@ tasks:
     dir: src-tauri/dist
     cmds:
       - npm run test:e2e:ui
+
+  db:seed:
+    desc: "Seed development database with sample restaurants"
+    cmds:
+      - sqlite3 ~/Library/Application\ Support/Lunch/lunch.db < scripts/dev_seed.sql
+      - echo "Database seeded successfully"
+
+  db:reset:
+    desc: "Reset development database (delete and recreate)"
+    cmds:
+      - rm -f ~/Library/Application\ Support/Lunch/lunch.db
+      - echo "Database deleted. Run 'task dev' to recreate, then 'task db:seed' to seed."
