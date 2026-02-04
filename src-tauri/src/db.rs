@@ -32,7 +32,7 @@ impl Database {
     }
 
     pub fn with_connection(conn: Connection) -> Result<Self> {
-        Self::with_connection_internal(conn, true)
+        Self::with_connection_internal(conn, false)
     }
 
     fn with_connection_internal(conn: Connection, should_seed: bool) -> Result<Self> {
@@ -267,10 +267,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_seed_database_on_first_launch() {
+    fn test_database_starts_empty() {
         let db = Database::in_memory().unwrap();
 
-        // Explicitly seed the database
+        // Verify database starts with no restaurants (clean slate for end users)
+        let restaurants = db.list_all().unwrap();
+        assert_eq!(restaurants.len(), 0, "Database should start empty for end users");
+    }
+
+    #[test]
+    fn test_seed_database_loads_csv_data() {
+        let db = Database::in_memory().unwrap();
+
+        // Explicitly seed the database (dev-only operation)
         db.seed_database().unwrap();
 
         // Verify restaurants were seeded
