@@ -461,7 +461,7 @@ platform :android do
     UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
 
     # Build Android app bundle using Tauri CLI
-    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab")
 
     # Upload to Play Store (track from env var, default: alpha)
     track = ENV['GOOGLE_PLAY_TRACK'] || "alpha"
@@ -500,7 +500,7 @@ platform :android do
     UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
 
     # Build Android app bundle using Tauri CLI
-    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab")
 
     # Upload to Play Store (track from env var, default: internal)
     track = ENV['GOOGLE_PLAY_TRACK'] || "internal"
@@ -539,7 +539,7 @@ platform :android do
     UI.success("Updated tauri.conf.json: v#{app_version} (build #{build_number})")
 
     # Build Android app bundle using Tauri CLI
-    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab true")
+    sh("cd #{ROOT_DIR}/src-tauri && npx tauri android build --aab")
 
     # Upload to Play Store (track from env var, default: production)
     track = ENV['GOOGLE_PLAY_TRACK'] || "production"
