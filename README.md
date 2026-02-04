@@ -18,7 +18,7 @@ Hats off to the OG Python version by [@zookinheimer](https://github.com/zookinhe
 ## Demo
 
 <div align="center">
-  <img src="static/demo.avif" alt="Demo" style="border-radius: 10px; border: 1px solid #d0d7de;" />
+  <img src="static/demo.avif" alt="Demo" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
 </div>
 
 ## Architecture
