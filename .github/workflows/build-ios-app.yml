@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: mini
+    runs-on: self-hosted
     env:
       BUNDLE_FROZEN: "true"
       RUBYOPT: "-W0"
