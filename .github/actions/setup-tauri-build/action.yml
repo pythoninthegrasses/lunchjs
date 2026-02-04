@@ -66,7 +66,7 @@ runs:
       if: inputs.platform == 'android'
       uses: dtolnay/rust-toolchain@stable
       with:
-        targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+        targets: aarch64-linux-android,armv7-linux-androideabi
 
     - name: Cache Task checksums
       uses: actions/cache@v5
@@ -91,7 +91,10 @@ runs:
       id: cache-build-android
       uses: actions/cache@v5
       with:
-        path: src-tauri/gen/android/app/build
+        path: |
+          src-tauri/gen/android/app/build
+          src-tauri/target/aarch64-linux-android
+          src-tauri/target/armv7-linux-androideabi
         key: ${{ runner.os }}-android-build-${{ hashFiles('src-tauri/src/**/*.rs', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock', 'src-tauri/tauri.conf.json', 'src-tauri/dist/**/*', 'src-tauri/icons/icon.png', 'fastlane/Fastfile', 'fastlane/Appfile') }}
         restore-keys: |
           ${{ runner.os }}-android-build-
