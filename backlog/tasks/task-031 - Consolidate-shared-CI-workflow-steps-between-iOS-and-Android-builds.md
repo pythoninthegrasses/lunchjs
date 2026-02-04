@@ -1,11 +1,11 @@
 ---
 id: task-031
 title: Consolidate shared CI workflow steps between iOS and Android builds
-status: To Do
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-02-03 00:00'
-updated_date: '2026-02-03 19:38'
+updated_date: '2026-02-04 20:51'
 labels:
   - ci
   - github-actions
@@ -39,7 +39,7 @@ This duplication increases maintenance burden and risks drift between workflows.
 - [x] #3 Extract common setup into shared workflow/action
 - [x] #4 iOS workflow uses shared setup
 - [x] #5 Android workflow uses shared setup
-- [ ] #6 Both workflows still function correctly after refactor
+- [x] #6 Both workflows still function correctly after refactor
 - [x] #7 Document the shared workflow/action usage
 <!-- AC:END -->
 
