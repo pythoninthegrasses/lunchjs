@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.16.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.15.0...v0.16.0) (2026-02-04)
+
+
+### Features
+
+* **db:** remove auto-seeding for clean slate on first boot ([fb55f74](https://github.com/pythoninthegrasses/lunchjs/commit/fb55f74747d0ab97f6d6a9ee545ea815fe5dabaf))
+* **dev:** add SQL seed file and db tasks for development ([7e8a4b5](https://github.com/pythoninthegrasses/lunchjs/commit/7e8a4b5d03332d15197f62addf33292cbc08fbb3))
+* **macos:** add titlebar theme matching for desktop ([184de3f](https://github.com/pythoninthegrasses/lunchjs/commit/184de3fc5c998829f1899438a640b7a2cb87a70e))
+
+
+### Bug Fixes
+
+* sync tauri.conf.json version with release-please ([7f25cf5](https://github.com/pythoninthegrasses/lunchjs/commit/7f25cf5ba20845f5b531c8a9a1b8f7f94cddcdc0))
+
 ## [0.15.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.14.0...v0.15.0) (2026-02-04)
 
 
