@@ -3,6 +3,12 @@ name: Release Please
 on:
   push:
     branches: ['main', 'master']
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE*'
+      - 'docs/**'
+      - 'backlog/**'
+      - '.github/*.md'
 
 permissions:
   contents: write
