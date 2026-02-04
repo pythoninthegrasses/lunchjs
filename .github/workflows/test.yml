@@ -157,7 +157,7 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: ./src-tauri/dist
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps webkit
 
       - name: Run Playwright tests
         working-directory: ./src-tauri/dist
