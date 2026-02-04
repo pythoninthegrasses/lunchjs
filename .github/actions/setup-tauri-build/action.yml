@@ -45,14 +45,15 @@ runs:
       run: |
         # Deno doesn't install optional dependencies (platform-specific native modules)
         # Install the Tauri CLI native module explicitly for the current platform
-        ARCH=$(uname -m)
-        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-        if [[ "$ARCH" == "arm64" || "$ARCH" == "aarch64" ]]; then
-          TAURI_NATIVE_PKG="@tauri-apps/cli-${OS}-arm64"
+        # Use Node.js to detect arch since npm may run under Rosetta (x64 on arm64 host)
+        NODE_ARCH=$(node -p "process.arch")
+        NODE_OS=$(node -p "process.platform")
+        if [[ "$NODE_ARCH" == "arm64" ]]; then
+          TAURI_NATIVE_PKG="@tauri-apps/cli-${NODE_OS}-arm64"
         else
-          TAURI_NATIVE_PKG="@tauri-apps/cli-${OS}-x64"
+          TAURI_NATIVE_PKG="@tauri-apps/cli-${NODE_OS}-x64"
         fi
-        echo "Installing $TAURI_NATIVE_PKG..."
+        echo "Installing $TAURI_NATIVE_PKG (Node arch: $NODE_ARCH, OS: $NODE_OS)..."
         npm install "$TAURI_NATIVE_PKG" --no-save
 
     - name: Setup Rust (iOS)
