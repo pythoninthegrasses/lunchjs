@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.17.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.16.0...v0.17.0) (2026-06-22)
+
+
+### Features
+
+* **cors:** add http:default capability and connect-src CSP for oth server ([38a878d](https://github.com/pythoninthegrasses/lunchjs/commit/38a878d8f2f2aec30d74796f941191ba611010a7))
+
+
+### Bug Fixes
+
+* **tauri:** remove http:default capability — plugin not installed ([fd814f9](https://github.com/pythoninthegrasses/lunchjs/commit/fd814f9cbffceea17b2440311902412189abe734))
+
 ## [0.16.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.15.0...v0.16.0) (2026-02-04)
 
 
