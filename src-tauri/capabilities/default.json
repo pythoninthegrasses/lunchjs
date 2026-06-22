@@ -12,7 +12,6 @@
     "shell:allow-execute",
     "shell:allow-spawn",
     "shell:allow-stdin-write",
-    "shell:allow-kill",
-    "http:default"
+    "shell:allow-kill"
   ]
 }
