@@ -1,11 +1,11 @@
 ---
 id: task-036
 title: Add macOS desktop titlebar theme matching
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-02-04 21:33'
-updated_date: '2026-02-04 21:39'
+updated_date: '2026-02-04 23:13'
 labels:
   - desktop
   - macos
@@ -26,7 +26,7 @@ Set the desktop titlebar to match the app's theme color on macOS using Tauri's o
 - [x] #2 Traffic light buttons match current theme (dark/light)
 - [x] #3 Theme changes update titlebar in real-time
 - [x] #4 System theme preference correctly applies to titlebar
-- [ ] #5 No regression on iOS or Android builds
+- [x] #5 No regression on iOS or Android builds
 <!-- AC:END -->
 
 ## Implementation Plan
