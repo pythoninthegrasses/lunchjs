@@ -53,6 +53,13 @@ def fix_tauri_project_yml
     modified = true
   end
 
+  # Xcode 26 resolves $(TOOLCHAIN_DIR) to the Metal toolchain, which lacks the Swift compatibility libs
+  if content.include?("$(TOOLCHAIN_DIR)/usr/lib/")
+    content.gsub!("$(TOOLCHAIN_DIR)/usr/lib/", "$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/")
+    UI.message("Fixed project.yml: pinned Swift library paths to XcodeDefault toolchain")
+    modified = true
+  end
+
   if modified
     File.write(project_yml_path, content)
     # Regenerate Xcode project with xcodegen
