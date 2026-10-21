@@ -1,0 +1,44 @@
+name: Distribute TestFlight
+
+on:
+  # Retry the external submission when another build in the same version was still in beta review
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+# Never overlap runs and never cancel one mid-submission
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  distribute:
+    runs-on: self-hosted
+    env:
+      BUNDLE_FROZEN: "true"
+      RUBYOPT: "-W0"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION || '4.0.1' }}
+
+      - name: Install Ruby dependencies
+        run: bundle install
+
+      - name: Distribute latest build to TestFlight groups
+        run: bundle exec fastlane ios distribute
+        env:
+          FASTLANE_OPT_OUT_USAGE: 1
+          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+          TESTFLIGHT_GROUPS: ${{ vars.TESTFLIGHT_GROUPS }}
+          TESTFLIGHT_REVIEW_FIRST_NAME: ${{ vars.TESTFLIGHT_REVIEW_FIRST_NAME }}
+          TESTFLIGHT_REVIEW_LAST_NAME: ${{ vars.TESTFLIGHT_REVIEW_LAST_NAME }}
+          TESTFLIGHT_REVIEW_PHONE: ${{ secrets.TESTFLIGHT_REVIEW_PHONE }}
+          TESTFLIGHT_REVIEW_EMAIL: ${{ secrets.TESTFLIGHT_REVIEW_EMAIL }}
+          TESTFLIGHT_FEEDBACK_EMAIL: ${{ secrets.TESTFLIGHT_FEEDBACK_EMAIL }}
