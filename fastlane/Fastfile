@@ -105,6 +105,24 @@ def testflight_changelog
   ENV['TESTFLIGHT_CHANGELOG'] || changelog_from_git_commits(commits_count: 10, pretty: "- %s", merge_commit_filtering: "exclude_merges")
 end
 
+# Shared TestFlight group distribution settings; review contact details come from env
+def testflight_distribution_options
+  {
+    changelog: testflight_changelog,
+    distribute_external: true,
+    groups: TESTFLIGHT_GROUPS,
+    beta_app_description: "What's for lunch?",
+    beta_app_feedback_email: ENV.fetch('TESTFLIGHT_FEEDBACK_EMAIL'),
+    beta_app_review_info: {
+      contact_first_name: ENV.fetch('TESTFLIGHT_REVIEW_FIRST_NAME'),
+      contact_last_name: ENV.fetch('TESTFLIGHT_REVIEW_LAST_NAME'),
+      contact_phone: ENV.fetch('TESTFLIGHT_REVIEW_PHONE'),
+      contact_email: ENV.fetch('TESTFLIGHT_REVIEW_EMAIL'),
+      demo_account_required: false
+    }
+  }
+end
+
 # Get a unique build number using timestamp
 # This avoids race conditions with TestFlight API returning stale data
 def get_next_build_number
@@ -253,6 +271,8 @@ platform :ios do
 
   desc "Build and upload to TestFlight"
   lane :beta do
+    # Resolve early so missing env vars fail before the long build
+    testflight_options = testflight_distribution_options
     configure_minio
     setup_ci_keychain
     match(
@@ -334,9 +354,18 @@ platform :ios do
       api_key: api_key,
       skip_waiting_for_build_processing: false,
       uses_non_exempt_encryption: false,
-      changelog: testflight_changelog,
-      distribute_external: true,
-      groups: TESTFLIGHT_GROUPS
+      **testflight_options
+    )
+  end
+
+  desc "Distribute an already uploaded build to TestFlight groups (BUILD_NUMBER optional, defaults to latest)"
+  lane :distribute do
+    upload_to_testflight(
+      api_key: api_key,
+      distribute_only: true,
+      app_version: get_app_version,
+      build_number: ENV['BUILD_NUMBER'],
+      **testflight_distribution_options
     )
   end
 
