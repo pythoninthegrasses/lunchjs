@@ -186,6 +186,8 @@ The workflow `.github/workflows/build-android-app.yml` automates builds on PR an
 
 The key alias `lunch` is hardcoded in the workflow.
 
+**PATH on the self-hosted runner:** do NOT set `PATH: ${{ env.JAVA_HOME }}/bin:${{ env.PATH }}` in a step `env` block. The `env` context only holds variables set by the workflow, not what the runner process inherited, so `env.PATH` is empty on GitHub and the step runs with a PATH of just the JDK directory. The symptom is `npm error enoent spawn sh ENOENT` from `npx tauri android build` (the step log shows `PATH: /opt/homebrew/opt/openjdk@21/bin:`). The workflow instead appends `$JAVA_HOME/bin` to `$GITHUB_PATH` in an `Add JDK to PATH` step, which prepends and preserves the rest. Node and Homebrew are added to PATH by `.github/actions/setup-tauri-build` (see [release-please.md](release-please.md#ci)). `act` does not reproduce this failure because it fills `env.PATH` from the host.
+
 ---
 
 ## Fastlane Lanes
