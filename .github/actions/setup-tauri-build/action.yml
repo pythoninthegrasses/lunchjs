@@ -22,15 +22,17 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Add mise Node.js to PATH
+    - name: Add Homebrew and mise Node.js to PATH
       shell: bash
       run: |
-        # Self-hosted runner doesn't load mise shims; node version comes from .tool-versions
+        # Self-hosted runner doesn't load a login shell; GITHUB_PATH entries are prepended, so mise must be written last to win over Homebrew's node
+        [[ -d /opt/homebrew/bin ]] && echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
         MISE="$HOME/.local/bin/mise"
         if [[ ! -x "$MISE" ]]; then
-          echo "::notice::mise not found at $MISE, leaving PATH unchanged"
+          echo "::notice::mise not found at $MISE, leaving node PATH unchanged"
           exit 0
         fi
+        # Node version comes from .tool-versions
         dirname "$("$MISE" which node)" >> "$GITHUB_PATH"
 
     - name: Setup Ruby
