@@ -21,6 +21,7 @@ APP_IDENTIFIER = "com.lunch.desktop"
 TEAM_ID = "654C9Y2C3F"
 OUTPUT_DIR = "#{ROOT_DIR}/src-tauri/gen/apple/build"
 IPA_PATH = "#{OUTPUT_DIR}/Lunch.ipa"
+TESTFLIGHT_GROUPS = (ENV['TESTFLIGHT_GROUPS'] || "dev,uat").split(",").map(&:strip)
 
 # Fix Tauri iOS project issue where Externals folder in sources causes
 # "Multiple commands produce libapp.a" error (both debug and release copied)
@@ -90,6 +91,11 @@ def get_app_version
   else
     "1.0.0"
   end
+end
+
+# "What to Test" text; required by Apple for external group review
+def testflight_changelog
+  ENV['TESTFLIGHT_CHANGELOG'] || changelog_from_git_commits(commits_count: 10, pretty: "- %s", merge_commit_filtering: "exclude_merges")
 end
 
 # Get a unique build number using timestamp
@@ -319,8 +325,11 @@ platform :ios do
     upload_to_testflight(
       ipa: IPA_PATH,
       api_key: api_key,
-      skip_waiting_for_build_processing: true,
-      uses_non_exempt_encryption: false
+      skip_waiting_for_build_processing: false,
+      uses_non_exempt_encryption: false,
+      changelog: testflight_changelog,
+      distribute_external: true,
+      groups: TESTFLIGHT_GROUPS
     )
   end
 
