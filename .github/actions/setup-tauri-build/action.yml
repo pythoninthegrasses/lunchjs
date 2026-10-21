@@ -23,12 +23,14 @@ runs:
   using: 'composite'
   steps:
     - name: Add mise Node.js to PATH
-      if: runner.environment == 'self-hosted'
       shell: bash
       run: |
         # Self-hosted runner doesn't load mise shims; node version comes from .tool-versions
         MISE="$HOME/.local/bin/mise"
-        [[ -x "$MISE" ]] || { echo "mise not found at $MISE"; exit 1; }
+        if [[ ! -x "$MISE" ]]; then
+          echo "::notice::mise not found at $MISE, leaving PATH unchanged"
+          exit 0
+        fi
         dirname "$("$MISE" which node)" >> "$GITHUB_PATH"
 
     - name: Setup Ruby
