@@ -30,6 +30,13 @@ Decisions that should not be relitigated:
 - `dev` is NOT listed in `TESTFLIGHT_GROUPS`. App Store Connect rejects manual assignment to an internal group with automatic distribution (`Builds cannot be assigned to this internal group. - Cannot add internal group to a build.`). Only external groups are assigned.
 - The `beta` lane uses `skip_waiting_for_build_processing: false`. With `true`, fastlane silently skips all distribution and the changelog. The cost is roughly 13 minutes of waiting for processing, on CI as well.
 - `uat` builds are not installable until Apple approves the beta review. The first build of a version waits for review. Later builds are usually approved automatically.
+- Apple allows only ONE build per version train in beta review at a time. A second build of the same version submitted while the first is waiting fails with `Another build is in review. - Another build in the same train is already in beta review. Please submit it again once it gets completed.` This happened on the 0.17.0 release: a PR-triggered build was still in review when the release build tried to submit.
+
+Three pieces keep this from breaking CI:
+
+1. **PR builds stay internal.** `build-ios-app.yml` sets `TESTFLIGHT_DISTRIBUTE_EXTERNAL=false` for `pull_request` runs, so they upload and reach `dev` only, with no external submission. Release (`workflow_call`) and manual (`workflow_dispatch`) runs leave it unset and submit to `uat`. Locally the default is external. In internal mode `testflight_distribution_options` returns only the changelog, so the `TESTFLIGHT_*` contact variables are not required.
+2. **The lanes tolerate the conflict.** `tolerate_build_in_review` wraps `upload_to_testflight` in the `beta` and `distribute` lanes. On the `Another build is in review` error it warns (`Skipping external submission`) and exits 0. The build is already processed and in `dev`. Any other error still fails the lane.
+3. **A scheduled retry.** `.github/workflows/distribute-testflight.yml` runs every 6 hours (and on `workflow_dispatch`) on the self-hosted runner and executes `bundle exec fastlane ios distribute` for the latest build of the version in `Cargo.toml`. It needs only Ruby, the App Store Connect API key, and the `TESTFLIGHT_*` settings, with no build. Once the earlier build leaves review, the next run submits the pending one to `uat`. It is safe to repeat: an already submitted build reports `already submitted for review` and exits 0.
 
 To inspect group flags and a build's state, use spaceship with the App Store Connect API key (`Spaceship::ConnectAPI::App.find("com.lunch.desktop").get_beta_groups`, then `fetch_builds` per group).
 
@@ -57,6 +64,7 @@ The repo is public, so the review contact comes from environment variables and i
 | `TESTFLIGHT_REVIEW_PHONE` | yes | Beta review contact |
 | `TESTFLIGHT_REVIEW_EMAIL` | yes | Beta review contact |
 | `TESTFLIGHT_GROUPS` | no | Comma-separated group names, default `uat` |
+| `TESTFLIGHT_DISTRIBUTE_EXTERNAL` | no | `false` keeps the build internal only (no groups, no review submission). Anything else, including unset, submits to external groups |
 | `TESTFLIGHT_CHANGELOG` | no | Overrides the git-log changelog |
 | `BUILD_NUMBER` | no | `distribute` lane only, defaults to the latest build |
 
