@@ -90,6 +90,13 @@ end
 CI_KEYCHAIN_NAME = "fastlane_ci"
 CI_KEYCHAIN_PASSWORD = "fastlane_ci_password"
 IOS_INFO_PLIST = "#{ROOT_DIR}/src-tauri/gen/apple/lunch_iOS/Info.plist"
+# Tracked files that iOS build lanes rewrite with per-build values
+IOS_GENERATED_FILES = [
+  "#{ROOT_DIR}/src-tauri/tauri.conf.json",
+  IOS_INFO_PLIST,
+  "#{XCODEPROJ}/project.pbxproj"
+].freeze
+IOS_BUILD_LANES = [:beta, :release, :build_only].freeze
 
 # Get the app version from Cargo.toml
 def get_app_version
@@ -196,15 +203,22 @@ def cleanup_ci_keychain
   delete_keychain(name: CI_KEYCHAIN_NAME) if File.exist?(keychain_path)
 end
 
+# Discard per-build edits so they don't dirty the working tree
+def restore_generated_ios_files
+  sh("git -C #{ROOT_DIR.shellescape} checkout -- #{IOS_GENERATED_FILES.map(&:shellescape).join(' ')}", log: false)
+end
+
 platform :ios do
-  # Cleanup CI keychain after successful lane completion
+  # Cleanup CI keychain and restore generated files after successful lane completion
   after_all do |lane|
     cleanup_ci_keychain
+    restore_generated_ios_files if IOS_BUILD_LANES.include?(lane)
   end
 
   # Cleanup CI keychain on error to prevent stale keychains
   error do |lane, exception|
     cleanup_ci_keychain
+    restore_generated_ios_files if IOS_BUILD_LANES.include?(lane)
   end
 
   desc "Sync code signing certificates"
