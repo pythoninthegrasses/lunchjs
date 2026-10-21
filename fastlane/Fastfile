@@ -21,7 +21,8 @@ APP_IDENTIFIER = "com.lunch.desktop"
 TEAM_ID = "654C9Y2C3F"
 OUTPUT_DIR = "#{ROOT_DIR}/src-tauri/gen/apple/build"
 IPA_PATH = "#{OUTPUT_DIR}/Lunch.ipa"
-TESTFLIGHT_GROUPS = (ENV['TESTFLIGHT_GROUPS'] || "dev,uat").split(",").map(&:strip)
+# Internal group "dev" has automatic distribution and rejects manual assignment, so only external groups are listed
+TESTFLIGHT_GROUPS = (ENV['TESTFLIGHT_GROUPS'] || "uat").split(",").map(&:strip)
 
 # Fix Tauri iOS project issue where Externals folder in sources causes
 # "Multiple commands produce libapp.a" error (both debug and release copied)
@@ -111,8 +112,12 @@ def testflight_distribution_options
     changelog: testflight_changelog,
     distribute_external: true,
     groups: TESTFLIGHT_GROUPS,
-    beta_app_description: "What's for lunch?",
-    beta_app_feedback_email: ENV.fetch('TESTFLIGHT_FEEDBACK_EMAIL'),
+    localized_app_info: {
+      "en-US" => {
+        description: "What's for lunch?",
+        feedback_email: ENV.fetch('TESTFLIGHT_FEEDBACK_EMAIL')
+      }
+    },
     beta_app_review_info: {
       contact_first_name: ENV.fetch('TESTFLIGHT_REVIEW_FIRST_NAME'),
       contact_last_name: ENV.fetch('TESTFLIGHT_REVIEW_LAST_NAME'),
@@ -362,6 +367,7 @@ platform :ios do
   lane :distribute do
     upload_to_testflight(
       api_key: api_key,
+      app_platform: "ios",
       distribute_only: true,
       app_version: get_app_version,
       build_number: ENV['BUILD_NUMBER'],
