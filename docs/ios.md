@@ -52,4 +52,4 @@ The `beta`, `release`, and `build_only` lanes rewrite `src-tauri/tauri.conf.json
 
 ## CI
 
-`.github/workflows/build-ios-app.yml` runs `task ios:testflight` on the self-hosted runner `mini`. The TestFlight settings it needs are listed in [fastlane.md](fastlane.md#github-actions-configuration).
+`.github/workflows/build-ios-app.yml` runs `task ios:testflight` on the self-hosted runner `mini`. It triggers on release, manually, and on pull requests that touch iOS paths, not on pushes to `main` (see [release-please.md](release-please.md#ci)). The TestFlight settings it needs are listed in [fastlane.md](fastlane.md#github-actions-configuration).
