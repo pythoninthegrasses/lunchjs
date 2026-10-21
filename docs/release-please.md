@@ -64,9 +64,19 @@ The authoritative check is the release PR itself: after the next push to `main`,
 
 Because Release Please pushes to its release branch, every update to the release PR that touches those paths triggers an iOS build, and that build runs `task ios:testflight`, which uploads to TestFlight. Pushing to `main` itself does not start the iOS workflow; it starts Release Please, which updates the PR, which starts the iOS workflow.
 
-The workflow runs on the self-hosted runner `mini`. Node.js there is managed by mise and is not on the runner service's PATH, so on 2026-10-21 a PR-triggered run failed in `Setup Tauri build environment` with `node: command not found` (exit 127) before reaching fastlane. The composite action `.github/actions/setup-tauri-build` now has a first step, limited to self-hosted runners, that appends the directory of `$HOME/.local/bin/mise which node` to `$GITHUB_PATH`. The version comes from `.tool-versions` (`nodejs 24.12.0`), which must be installed on the runner. `GITHUB_PATH` persists for the rest of the job, so `task` and fastlane's `npx tauri` see node as well. Both the iOS and Android workflows use this action. A Taskfile `env` PATH would not help: it only applies to commands run by `task`, and the failing step runs before `task` starts.
+The workflow runs on the self-hosted runner `mini`. Node.js there is managed by mise and is not on the runner service's PATH, so on 2026-10-21 a PR-triggered run failed in `Setup Tauri build environment` with `node: command not found` (exit 127) before reaching fastlane. The composite action `.github/actions/setup-tauri-build` now has a first step that appends the directory of `$HOME/.local/bin/mise which node` to `$GITHUB_PATH`, and emits a notice and leaves PATH alone when mise is not installed (as on GitHub-hosted runners). It deliberately has no `if: runner.environment == 'self-hosted'` guard, because that value is not populated by `act` and a wrongly false condition would silently skip the step. The version comes from `.tool-versions` (`nodejs 24.12.0`), which must be installed on the runner. `GITHUB_PATH` persists for the rest of the job, so `task` and fastlane's `npx tauri` see node as well. Both the iOS and Android workflows use this action. A Taskfile `env` PATH would not help: it only applies to commands run by `task`, and the failing step runs before `task` starts.
 
 An earlier run in June 2026 was cancelled after 24 hours, which points to the runner being offline at that time.
+
+### Testing workflows locally with act
+
+`.actrc` maps `runs-on: self-hosted` to native execution (`-P self-hosted=-self-hosted`), so no Docker is needed for those jobs. Limits found with act 0.2.80:
+
+- Never run `build-ios-app.yml` itself under act: its last step builds and uploads to TestFlight from your machine.
+- act cannot load `node24` actions (`ruby/setup-ruby@v1`, `denoland/setup-deno@v2`, `actions/cache@v5`), so the full composite action cannot run end to end. Ruby is never set up and `bundle install` fails on the macOS system Ruby.
+- `runner.environment` is not populated, so conditions on it evaluate false.
+
+To test the node PATH step, build a trimmed copy of the real action with `yq` that keeps only `Add mise Node.js to PATH` and `Install Tauri CLI native module`, place it temporarily under `.github/actions/` (untracked, delete afterwards), and call it from a throwaway workflow in a scratch directory with `act workflow_dispatch -W <workflow>`. Run it with a PATH that excludes every node (`env PATH=/usr/bin:/bin:/usr/sbin:/sbin act ...`; `/opt/homebrew/bin` has one). A control workflow that only runs `command -v node` should fail with exit 127, and the trimmed action followed by `node -v` should print the mise-managed version.
 
 ---
 
