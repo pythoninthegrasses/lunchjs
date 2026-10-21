@@ -64,7 +64,9 @@ The authoritative check is the release PR itself: after the next push to `main`,
 
 Because Release Please pushes to its release branch, every update to the release PR that touches those paths triggers an iOS build, and that build runs `task ios:testflight`, which uploads to TestFlight. Pushing to `main` itself does not start the iOS workflow; it starts Release Please, which updates the PR, which starts the iOS workflow.
 
-The workflow runs on the self-hosted runner `mini`. On 2026-10-21 a PR-triggered run failed in the `Setup Tauri build environment` step with `node: command not found` (exit 127) because `node` was not on the runner's PATH, before reaching fastlane. This is a runner environment problem, not a repo problem. An earlier run in June 2026 was cancelled after 24 hours, which points to the runner being offline.
+The workflow runs on the self-hosted runner `mini`. Node.js there is managed by mise and is not on the runner service's PATH, so on 2026-10-21 a PR-triggered run failed in `Setup Tauri build environment` with `node: command not found` (exit 127) before reaching fastlane. The composite action `.github/actions/setup-tauri-build` now has a first step, limited to self-hosted runners, that appends the directory of `$HOME/.local/bin/mise which node` to `$GITHUB_PATH`. The version comes from `.tool-versions` (`nodejs 24.12.0`), which must be installed on the runner. `GITHUB_PATH` persists for the rest of the job, so `task` and fastlane's `npx tauri` see node as well. Both the iOS and Android workflows use this action. A Taskfile `env` PATH would not help: it only applies to commands run by `task`, and the failing step runs before `task` starts.
+
+An earlier run in June 2026 was cancelled after 24 hours, which points to the runner being offline at that time.
 
 ---
 
