@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.17.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.16.0...v0.17.0) (2026-10-21)
+
+
+### Features
+
+* **cors:** add http:default capability and connect-src CSP for oth server ([38a878d](https://github.com/pythoninthegrasses/lunchjs/commit/38a878d8f2f2aec30d74796f941191ba611010a7))
+* **fastlane:** add beta app info and distribute lane for TestFlight groups ([ef3eb6e](https://github.com/pythoninthegrasses/lunchjs/commit/ef3eb6e9201328500d65d3057d6a3dc2e749d76c))
+* **fastlane:** distribute TestFlight builds to dev and uat groups ([bee5538](https://github.com/pythoninthegrasses/lunchjs/commit/bee55387cc88e8fd4ab5e9934796f551b6346357))
+* **fastlane:** restore generated iOS files after build lanes ([0dbd234](https://github.com/pythoninthegrasses/lunchjs/commit/0dbd2347bf47b45b6294f63ee6957c7b18c870c3))
+
+
+### Bug Fixes
+
+* **ci:** add Homebrew to PATH on the self-hosted runner ([b2ad7e3](https://github.com/pythoninthegrasses/lunchjs/commit/b2ad7e380828a502a59225a463594017b64b107a))
+* **ci:** append JDK to GITHUB_PATH instead of overriding PATH in android build ([8830326](https://github.com/pythoninthegrasses/lunchjs/commit/8830326a84a269ae9594dccd3a71a254a97c115c))
+* **ci:** skip mise PATH step when mise is missing instead of gating on runner.environment ([64c85fb](https://github.com/pythoninthegrasses/lunchjs/commit/64c85fbc69b3f7d2a97ffed8b182f662857e5062))
+* **fastlane:** pin Swift library paths to XcodeDefault toolchain ([40a58eb](https://github.com/pythoninthegrasses/lunchjs/commit/40a58eb04ba96595be42dc79a5fcb9d018f2bc3f))
+* **fastlane:** set app platform and en-US beta info, assign only external groups ([59a01b0](https://github.com/pythoninthegrasses/lunchjs/commit/59a01b0958a5f150be98cd17dd2ab588cf5c8ae1))
+* **ios:** pin Swift library paths to XcodeDefault toolchain in project.yml ([68b7199](https://github.com/pythoninthegrasses/lunchjs/commit/68b7199115e5796dd9a20928200ae8f99bf5fd51))
+* **tauri:** remove http:default capability — plugin not installed ([fd814f9](https://github.com/pythoninthegrasses/lunchjs/commit/fd814f9cbffceea17b2440311902412189abe734))
+
 ## [0.16.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.15.0...v0.16.0) (2026-02-04)
 
 
