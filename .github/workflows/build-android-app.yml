@@ -46,6 +46,9 @@ jobs:
         with:
           platform: android
 
+      - name: Add JDK to PATH
+        run: echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
+
       - name: Setup Android signing
         env:
           ANDROID_KEY_ALIAS: lunch
@@ -59,7 +62,6 @@ jobs:
       - name: Build and upload to Google Play
         run: task android:testflight
         env:
-          PATH: ${{ env.JAVA_HOME }}/bin:${{ env.PATH }}
           FASTLANE_OPT_OUT_USAGE: 1
           SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
           GOOGLE_PLAY_TRACK: ${{ vars.GOOGLE_PLAY_TRACK || 'alpha' }}
