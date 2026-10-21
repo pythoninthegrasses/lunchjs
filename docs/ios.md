@@ -46,7 +46,7 @@ Do NOT re-download the Metal toolchain (`xcodebuild -downloadComponent MetalTool
 
 ### Files modified by a build
 
-A lane run rewrites `src-tauri/tauri.conf.json` (version, build number), `src-tauri/gen/apple/lunch_iOS/Info.plist`, `src-tauri/gen/apple/lunch.xcodeproj/project.pbxproj`, and `src-tauri/gen/apple/project.yml`. These are normal pre-build edits and are not part of the change being deployed.
+The `beta`, `release`, and `build_only` lanes rewrite `src-tauri/tauri.conf.json` (version, build number), `src-tauri/gen/apple/lunch_iOS/Info.plist`, and `src-tauri/gen/apple/lunch.xcodeproj/project.pbxproj` with per-build values. All three stay tracked (`gen/apple` is intentionally committed, see `.gitignore`), and the lanes restore them with `git checkout --` in the `after_all` and `error` hooks, so the working tree is clean afterwards. This discards any uncommitted hand edits to those three files, so commit them before running a build lane. `project.yml` is not restored because its patch is deterministic and committed. The Android lanes still leave `tauri.conf.json` modified.
 
 ---
 

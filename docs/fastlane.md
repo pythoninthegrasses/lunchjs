@@ -84,6 +84,7 @@ The lane needs `app_platform: "ios"` because there is no IPA to infer it from. W
 
 ## Gotchas
 
+- Build lanes restore `tauri.conf.json`, `Info.plist`, and `project.pbxproj` after running (see [ios.md](ios.md#files-modified-by-a-build)). The committed baseline for those files is whatever the last committed build produced, so do not expect their version fields to match the current build.
 - `task` loads `.env` (`dotenv: ['.env']`). Running `bundle exec fastlane` directly does not, so `api_key` returns nil and fastlane falls back to interactive Apple ID login.
 - A `task` run's exit status is the real result. Piping it through `tail` hides failures behind the pipe's exit code.
 - `bundle exec fastlane` fails with `Could not find nkf-0.2.0, sysrandom-1.0.5, ...` when vendored gems lack native extensions. Run `bundle install`.
