@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.17.0...v0.18.0) (2026-10-21)
+
+
+### Features
+
+* **fastlane:** keep PR builds internal and tolerate a build already in beta review ([9f378c5](https://github.com/pythoninthegrasses/lunchjs/commit/9f378c55d7055dd26f3e3ae97a1ef769da49d34a))
+
 ## [0.17.0](https://github.com/pythoninthegrasses/lunchjs/compare/v0.16.0...v0.17.0) (2026-10-21)
 
 
