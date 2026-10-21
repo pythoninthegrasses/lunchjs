@@ -113,10 +113,17 @@ def testflight_changelog
   ENV['TESTFLIGHT_CHANGELOG'] || changelog_from_git_commits(commits_count: 10, pretty: "- %s", merge_commit_filtering: "exclude_merges")
 end
 
+# Apple allows one build per version in beta review, so CI sets this to "false" for pull request builds
+def testflight_external?
+  ENV['TESTFLIGHT_DISTRIBUTE_EXTERNAL'] != 'false'
+end
+
 # Shared TestFlight group distribution settings; review contact details come from env
 def testflight_distribution_options
-  {
-    changelog: testflight_changelog,
+  options = { changelog: testflight_changelog }
+  return options unless testflight_external?
+
+  options.merge(
     distribute_external: true,
     groups: TESTFLIGHT_GROUPS,
     localized_app_info: {
@@ -132,7 +139,16 @@ def testflight_distribution_options
       contact_email: ENV.fetch('TESTFLIGHT_REVIEW_EMAIL'),
       demo_account_required: false
     }
-  }
+  )
+end
+
+# Skip the external submission instead of failing when another build in the same version is in beta review
+def tolerate_build_in_review
+  yield
+rescue StandardError => e
+  raise unless e.message.include?("Another build is in review")
+
+  UI.important("Skipping external submission: another build in this version is in beta review. The scheduled distribute workflow retries it.")
 end
 
 # Get a unique build number using timestamp
@@ -368,25 +384,29 @@ platform :ios do
     FileUtils.cp(tauri_ipa, IPA_PATH) if File.exist?(tauri_ipa)
 
     # Upload to TestFlight
-    upload_to_testflight(
-      ipa: IPA_PATH,
-      api_key: api_key,
-      skip_waiting_for_build_processing: false,
-      uses_non_exempt_encryption: false,
-      **testflight_options
-    )
+    tolerate_build_in_review do
+      upload_to_testflight(
+        ipa: IPA_PATH,
+        api_key: api_key,
+        skip_waiting_for_build_processing: false,
+        uses_non_exempt_encryption: false,
+        **testflight_options
+      )
+    end
   end
 
   desc "Distribute an already uploaded build to TestFlight groups (BUILD_NUMBER optional, defaults to latest)"
   lane :distribute do
-    upload_to_testflight(
-      api_key: api_key,
-      app_platform: "ios",
-      distribute_only: true,
-      app_version: get_app_version,
-      build_number: ENV['BUILD_NUMBER'],
-      **testflight_distribution_options
-    )
+    tolerate_build_in_review do
+      upload_to_testflight(
+        api_key: api_key,
+        app_platform: "ios",
+        distribute_only: true,
+        app_version: get_app_version,
+        build_number: ENV['BUILD_NUMBER'],
+        **testflight_distribution_options
+      )
+    end
   end
 
   desc "Upload to App Store"
