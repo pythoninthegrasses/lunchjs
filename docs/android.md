@@ -165,7 +165,7 @@ After the first manual upload, use Fastlane for subsequent releases:
 # Upload to internal testing track
 task android:internal
 
-# Upload to beta track
+# Upload to the alpha (closed testing) track, or the track in GOOGLE_PLAY_TRACK
 task android:testflight
 
 # Upload to production
@@ -174,7 +174,9 @@ task android:release
 
 ### CI/CD (GitHub Actions)
 
-The workflow `.github/workflows/build-android-app.yml` automates builds on PR and release.
+The workflow `.github/workflows/build-android-app.yml` runs on pull requests that touch Android-relevant paths and on `workflow_dispatch`. It declares `workflow_call`, but `release-please.yml` only calls the iOS workflow, so merging a release PR does not publish Android: the release's Android build comes from the release PR's own run or a manual dispatch. Each run uploads to the track in the `GOOGLE_PLAY_TRACK` repository variable (`alpha` when unset). It can be dispatched against a branch (`gh workflow run build-android-app.yml --ref <branch>`) to test unmerged workflow or action changes without touching `main`.
+
+**Play has no iOS-style review queue.** Unlike TestFlight, which allows one build per version in beta review at a time (see [fastlane.md](fastlane.md#testflight-groups)), a new upload to a Play testing track simply replaces the track's release, and three `alpha` uploads in a few hours on 2026-10-21 were all accepted. Version codes must still increase across all tracks, which the timestamp-based codes guarantee. If managed publishing is ever enabled for the app, the Publishing API can refuse to commit an edit while changes are in review; it was not an issue when this was written. Nothing like `TESTFLIGHT_DISTRIBUTE_EXTERNAL`, tolerate-and-retry, or a scheduled distribute is needed for Android.
 
 **Required GitHub Secrets:**
 
@@ -184,7 +186,7 @@ The workflow `.github/workflows/build-android-app.yml` automates builds on PR an
 | `ANDROID_KEY_BASE64` | Base64-encoded keystore | `base64 -i ~/lunchjs-release.jks \| tr -d '\n'` |
 | `GOOGLE_PLAY_JSON_KEY` | Service account JSON contents | Copy contents of service account JSON file |
 
-The key alias `lunch` is hardcoded in the workflow.
+The key alias `lunch` is hardcoded in the workflow. Secrets are write-only on GitHub, so their values cannot be read back. On 2026-10-21 all three were reset from the local `.env` and files, after confirming those exact files (keystore and Play key, by sha256) built and uploaded successfully on the runner. To reset them again: `base64 -i ~/lunchjs-release.jks | tr -d '\n' | gh secret set ANDROID_KEY_BASE64`, `gh secret set GOOGLE_PLAY_JSON_KEY < lunchjs.json`, and set `ANDROID_KEY_PASSWORD` to `ANDROID_KEYSTORE_PASSWORD` from `.env`. The workflow writes `keystore.properties` from `ANDROID_KEY_PASSWORD` (used for both the store and key password) and decodes the keystore into `$RUNNER_TEMP`. The Play service account JSON is passed as `SUPPLY_JSON_KEY_DATA`, so no file path is involved in CI.
 
 **PATH on the self-hosted runner:** do NOT set `PATH: ${{ env.JAVA_HOME }}/bin:${{ env.PATH }}` in a step `env` block. The `env` context only holds variables set by the workflow, not what the runner process inherited, so `env.PATH` is empty on GitHub and the step runs with a PATH of just the JDK directory. The symptom is `npm error enoent spawn sh ENOENT` from `npx tauri android build` (the step log shows `PATH: /opt/homebrew/opt/openjdk@21/bin:`). The workflow instead appends `$JAVA_HOME/bin` to `$GITHUB_PATH` in an `Add JDK to PATH` step, which prepends and preserves the rest. Node and Homebrew are added to PATH by `.github/actions/setup-tauri-build` (see [release-please.md](release-please.md#ci)). `act` does not reproduce this failure because it fills `env.PATH` from the host.
 
@@ -196,7 +198,7 @@ The key alias `lunch` is hardcoded in the workflow.
 |------|-------------|--------------|
 | `android build` | Build AAB and APK | `bundle exec fastlane android build` |
 | `android internal` | Upload to internal testing | `task android:internal` |
-| `android beta` | Upload to beta track | `task android:testflight` |
+| `android beta` | Upload to `GOOGLE_PLAY_TRACK`, default `alpha` | `task android:testflight` |
 | `android release` | Upload to production | `task android:release` |
 
 All lanes automatically:
@@ -221,7 +223,7 @@ All lanes automatically:
 | `task android:build:aab` | Build signed AAB |
 | `task android:keystore:setup` | Generate keystore.properties from env vars |
 | `task android:internal` | Upload to internal testing |
-| `task android:testflight` | Upload to beta track |
+| `task android:testflight` | Upload to `alpha` (or `GOOGLE_PLAY_TRACK`) |
 | `task android:release` | Upload to production |
 | `task android:clean` | Clean build artifacts |
 | `task android:emulator:keyboard` | Enable hardware keyboard for emulator |
