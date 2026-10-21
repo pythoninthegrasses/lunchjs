@@ -56,7 +56,7 @@ The authoritative check is the release PR itself: after the next push to `main`,
 
 ## CI
 
-`build-ios-app.yml` has no `push` trigger. It runs on:
+The runner environment, the full trigger map, secrets, and how to verify CI changes are in [ci.md](ci.md). `build-ios-app.yml` has no `push` trigger. It runs on:
 
 - `workflow_call`, from `release-please.yml` after a release is created
 - `workflow_dispatch`, manually
