@@ -39,6 +39,14 @@ Build only (no upload) - for testing
 
 Build and upload to TestFlight
 
+### ios distribute
+
+```sh
+[bundle exec] fastlane ios distribute
+```
+
+Distribute an already uploaded build to TestFlight groups (BUILD_NUMBER optional, defaults to latest)
+
 ### ios release
 
 ```sh
