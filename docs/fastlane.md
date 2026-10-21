@@ -38,6 +38,8 @@ Three pieces keep this from breaking CI:
 2. **The lanes tolerate the conflict.** `tolerate_build_in_review` wraps `upload_to_testflight` in the `beta` and `distribute` lanes. On the `Another build is in review` error it warns (`Skipping external submission`) and exits 0. The build is already processed and in `dev`. Any other error still fails the lane.
 3. **A scheduled retry.** `.github/workflows/distribute-testflight.yml` runs every 6 hours (and on `workflow_dispatch`) on the self-hosted runner and executes `bundle exec fastlane ios distribute` for the latest build of the version in `Cargo.toml`. It needs only Ruby, the App Store Connect API key, and the `TESTFLIGHT_*` settings, with no build. Once the earlier build leaves review, the next run submits the pending one to `uat`. It is safe to repeat: an already submitted build reports `already submitted for review` and exits 0.
 
+Verified on CI on 2026-10-21: a release PR iOS run with `TESTFLIGHT_DISTRIBUTE_EXTERNAL=false` built, uploaded, and processed build 88551963 (0.18.0) and ended with `Successfully distributed build to Internal testers`, with no external submission and no beta review slot used. A manual `workflow_dispatch` of `Distribute TestFlight` ran Ruby setup, `bundle install`, and the `distribute` lane on the runner, printed `Skipping external submission: another build in this version is in beta review` for the blocked 0.17.0 build, and finished green.
+
 To inspect group flags and a build's state, use spaceship with the App Store Connect API key (`Spaceship::ConnectAPI::App.find("com.lunch.desktop").get_beta_groups`, then `fetch_builds` per group).
 
 ---
