@@ -316,6 +316,10 @@ Verify package name is `com.lunch.app` in:
 
 Note: The namespace (`com.lunch.desktop`) is different from the applicationId (`com.lunch.app`).
 
+### `error: a value is required for '--aab <AAB>'`
+
+Tauri CLI 2.9.6 defines `--aab` and `--apk` as options that take `true` or `false`, while 2.10.0 defines them as plain flags (what `fastlane/Fastfile` passes). This hit CI because `package-lock.json` pinned 2.9.6 while `deno.lock` pinned 2.10.0: the `setup-tauri-build` action runs `deno install` and then `npm install <native module> --no-save`, and the second step reconciles `node_modules` to `package-lock.json`. Keep `@tauri-apps/cli` in `package.json`, `package-lock.json`, and `deno.lock` on the same version, and check with `npx tauri --version`. Do not "fix" it by changing the Fastfile to `--aab true`, which breaks 2.10.0.
+
 ### Version Code Too Low
 
 Fastlane uses timestamp-based version codes. If Play Console rejects the build, wait a second and rebuild - each build gets a unique version code.
