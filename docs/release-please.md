@@ -68,6 +68,10 @@ The workflow runs on the self-hosted runner `mini`. Node.js there is managed by 
 
 An earlier run in June 2026 was cancelled after 24 hours, which points to the runner being offline at that time.
 
+### Green does not mean a new build
+
+The build step runs `task ios:testflight` or `task android:testflight`, which skip themselves when the checksum of their sources matches the last recorded one (see [fastlane.md](fastlane.md#gotchas)). On 2026-10-21 an iOS run on a release PR update finished green in about 5 minutes without building, because the task's sources were unchanged since the previous run. The release PR branch already carries the bumped `Cargo.toml`, `Cargo.lock`, and `tauri.conf.json` before it is merged, and release-please only changes `CHANGELOG.md` and the manifest on later updates, so do not assume the build after a merge is a fresh one. Check the run log for the upload line before assuming a build exists in TestFlight or Google Play.
+
 ### Testing workflows locally with act
 
 `.actrc` maps `runs-on: self-hosted` to native execution (`-P self-hosted=-self-hosted`), so no Docker is needed for those jobs. Limits found with act 0.2.80:
